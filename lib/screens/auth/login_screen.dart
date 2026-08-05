@@ -13,22 +13,19 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 80),
               const Icon(
                 Icons.local_hospital,
-                size: 80,
+                size: 100,
                 color: AppColors.primaryBlue,
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 32),
               const Text(
                 'RapidCare',
                 style: TextStyle(
@@ -38,7 +35,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: 24),
               const SectionTitle(
                 title: 'Welcome Back',
                 subtitle: 'Sign in to continue',
@@ -83,18 +80,39 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: const [
-                  Expanded(child: Divider()),
+                  Expanded(
+                    flex: 2,
+                    child: Divider(),
+                  ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Text('OR'),
                   ),
-                  Expanded(child: Divider()),
+                  Expanded(
+                    flex: 2,
+                    child: Divider(),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
               OutlinedButton.icon(
                 onPressed: () {},
-                icon: const Icon(Icons.g_mobiledata),
+                icon: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF4285F4), Color(0xFF34A853), Color(0xFFFBBC05), Color(0xFFEA4335)],
+                      stops: [0.0, 0.33, 0.66, 1.0],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.g_mobiledata,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
                 label: const Text('Sign in with Google'),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -115,6 +133,15 @@ class LoginScreen extends StatelessWidget {
                     child: const Text('Create Account'),
                   ),
                 ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const Text(
+                'Version 1.0.0',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondaryGrey,
+                ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
