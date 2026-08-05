@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/theme/app_theme.dart';
 import 'screens/splash/splash_screen.dart';
 
 class RapidCareApp extends StatelessWidget {
@@ -10,6 +11,7 @@ class RapidCareApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'RapidCare',
       themeMode: ThemeMode.light,
+      theme: AppTheme.lightTheme,
       home: const SplashScreen(),
     );
   }
