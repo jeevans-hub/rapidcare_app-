@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../widgets/section_title.dart';
@@ -15,65 +17,97 @@ class RegisterScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.lg),
               const Icon(
                 Icons.local_hospital,
                 size: 80,
-                color: Colors.blue,
+                color: AppColors.primaryBlue,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.md),
+              const Text(
+                'RapidCare',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryBlue,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
               const SectionTitle(
                 title: 'Create Account',
+                subtitle: "Let's create your healthcare account",
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.lg),
               const CustomTextField(
                 label: 'Full Name',
                 hint: 'Enter your full name',
                 prefixIcon: Icons.person,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               const CustomTextField(
-                label: 'Email',
+                label: 'Email Address',
                 hint: 'Enter your email',
                 prefixIcon: Icons.email,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               const CustomTextField(
-                label: 'Phone',
+                label: 'Phone Number',
                 hint: 'Enter your phone number',
                 prefixIcon: Icons.phone,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               const CustomTextField(
                 label: 'Password',
                 hint: 'Enter your password',
                 prefixIcon: Icons.lock,
                 isPassword: true,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               const CustomTextField(
                 label: 'Confirm Password',
                 hint: 'Confirm your password',
                 prefixIcon: Icons.lock,
                 isPassword: true,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Checkbox(
+                    value: false,
+                    onChanged: (value) {},
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'I agree to the Terms & Conditions',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
               PrimaryButton(
                 text: 'Create Account',
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, AppRoutes.home);
                 },
               ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Already have an account? Sign In'),
+              const SizedBox(height: AppSpacing.xl),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Already have an account?'),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Sign In'),
+                  ),
+                ],
               ),
             ],
           ),

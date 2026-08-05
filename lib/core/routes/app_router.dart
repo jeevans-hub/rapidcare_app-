@@ -3,6 +3,9 @@ import 'app_routes.dart';
 import '../../screens/splash/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
+import '../../screens/auth/forgot_password_screen.dart';
+import '../../screens/auth/otp_verification_screen.dart';
+import '../../screens/auth/reset_password_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/appointments/appointment_screen.dart';
 import '../../screens/emergency/emergency_screen.dart';
@@ -26,6 +29,18 @@ class AppRouter {
       case AppRoutes.register:
         return MaterialPageRoute(
           builder: (_) => const RegisterScreen(),
+        );
+      case AppRoutes.forgotPassword:
+        return MaterialPageRoute(
+          builder: (_) => const ForgotPasswordScreen(),
+        );
+      case AppRoutes.otpVerification:
+        return MaterialPageRoute(
+          builder: (_) => const OTPVerificationScreen(),
+        );
+      case AppRoutes.resetPassword:
+        return MaterialPageRoute(
+          builder: (_) => const ResetPasswordScreen(),
         );
       case AppRoutes.home:
         return MaterialPageRoute(

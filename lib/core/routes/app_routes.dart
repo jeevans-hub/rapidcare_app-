@@ -10,4 +10,7 @@ class AppRoutes {
   static const String pharmacy = '/pharmacy';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String forgotPassword = '/forgot-password';
+  static const String otpVerification = '/otp-verification';
+  static const String resetPassword = '/reset-password';
 }
