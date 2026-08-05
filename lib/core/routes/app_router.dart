@@ -1,0 +1,60 @@
+import 'package:flutter/material.dart';
+import 'app_routes.dart';
+import '../../screens/splash/splash_screen.dart';
+import '../../screens/auth/login_screen.dart';
+import '../../screens/auth/register_screen.dart';
+import '../../screens/home/home_screen.dart';
+import '../../screens/appointments/appointment_screen.dart';
+import '../../screens/emergency/emergency_screen.dart';
+import '../../screens/pharmacy/pharmacy_screen.dart';
+import '../../screens/profile/profile_screen.dart';
+import '../../screens/settings/settings_screen.dart';
+
+class AppRouter {
+  AppRouter._();
+
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.splash:
+        return MaterialPageRoute(
+          builder: (_) => const SplashScreen(),
+        );
+      case AppRoutes.login:
+        return MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        );
+      case AppRoutes.register:
+        return MaterialPageRoute(
+          builder: (_) => const RegisterScreen(),
+        );
+      case AppRoutes.home:
+        return MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
+        );
+      case AppRoutes.appointments:
+        return MaterialPageRoute(
+          builder: (_) => const AppointmentScreen(),
+        );
+      case AppRoutes.emergency:
+        return MaterialPageRoute(
+          builder: (_) => const EmergencyScreen(),
+        );
+      case AppRoutes.pharmacy:
+        return MaterialPageRoute(
+          builder: (_) => const PharmacyScreen(),
+        );
+      case AppRoutes.profile:
+        return MaterialPageRoute(
+          builder: (_) => const ProfileScreen(),
+        );
+      case AppRoutes.settings:
+        return MaterialPageRoute(
+          builder: (_) => const SettingsScreen(),
+        );
+      default:
+        return MaterialPageRoute(
+          builder: (_) => const SplashScreen(),
+        );
+    }
+  }
+}

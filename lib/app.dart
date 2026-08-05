@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
-import 'screens/splash/splash_screen.dart';
+import 'core/routes/app_routes.dart';
+import 'core/routes/app_router.dart';
 
 class RapidCareApp extends StatelessWidget {
   const RapidCareApp({super.key});
@@ -12,7 +13,8 @@ class RapidCareApp extends StatelessWidget {
       title: 'RapidCare',
       themeMode: ThemeMode.light,
       theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }
