@@ -13,4 +13,8 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String otpVerification = '/otp-verification';
   static const String resetPassword = '/reset-password';
+  static const String doctorList = '/doctor-list';
+  static const String doctorDetails = '/doctor-details';
+  static const String bookAppointment = '/book-appointment';
+  static const String appointmentConfirmation = '/appointment-confirmation';
 }

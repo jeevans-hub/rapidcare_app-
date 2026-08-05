@@ -8,6 +8,10 @@ import '../../screens/auth/otp_verification_screen.dart';
 import '../../screens/auth/reset_password_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/appointments/appointment_screen.dart';
+import '../../screens/appointments/doctor_list_screen.dart';
+import '../../screens/appointments/doctor_details_screen.dart';
+import '../../screens/appointments/book_appointment_screen.dart';
+import '../../screens/appointments/appointment_confirmation_screen.dart';
 import '../../screens/emergency/emergency_screen.dart';
 import '../../screens/pharmacy/pharmacy_screen.dart';
 import '../../screens/profile/profile_screen.dart';
@@ -49,6 +53,22 @@ class AppRouter {
       case AppRoutes.appointments:
         return MaterialPageRoute(
           builder: (_) => const AppointmentScreen(),
+        );
+      case AppRoutes.doctorList:
+        return MaterialPageRoute(
+          builder: (_) => const DoctorListScreen(),
+        );
+      case AppRoutes.doctorDetails:
+        return MaterialPageRoute(
+          builder: (_) => const DoctorDetailsScreen(),
+        );
+      case AppRoutes.bookAppointment:
+        return MaterialPageRoute(
+          builder: (_) => const BookAppointmentScreen(),
+        );
+      case AppRoutes.appointmentConfirmation:
+        return MaterialPageRoute(
+          builder: (_) => const AppointmentConfirmationScreen(),
         );
       case AppRoutes.emergency:
         return MaterialPageRoute(
