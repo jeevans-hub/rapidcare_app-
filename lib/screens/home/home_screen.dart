@@ -18,6 +18,24 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        break;
+      case 1:
+        Navigator.pushNamed(context, AppRoutes.appointments);
+        break;
+      case 2:
+        Navigator.pushNamed(context, AppRoutes.emergencyHome);
+        break;
+      case 3:
+        Navigator.pushNamed(context, AppRoutes.pharmacyHome);
+        break;
+      case 4:
+        Navigator.pushNamed(context, AppRoutes.profile);
+        break;
+    }
   }
 
   @override

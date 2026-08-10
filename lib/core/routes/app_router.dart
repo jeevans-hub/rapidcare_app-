@@ -24,7 +24,13 @@ import '../../screens/pharmacy/pharmacy_cart_screen.dart';
 import '../../screens/pharmacy/prescription_screen.dart';
 import '../../screens/pharmacy/pharmacy_order_confirmation_screen.dart';
 import '../../screens/profile/profile_screen.dart';
+import '../../screens/profile/edit_profile_screen.dart';
+import '../../screens/profile/medical_information_screen.dart';
 import '../../screens/settings/settings_screen.dart';
+import '../../screens/settings/notification_settings_screen.dart';
+import '../../screens/settings/privacy_security_screen.dart';
+import '../../screens/settings/help_support_screen.dart';
+import '../../screens/settings/about_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -127,9 +133,33 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const ProfileScreen(),
         );
+      case AppRoutes.editProfile:
+        return MaterialPageRoute(
+          builder: (_) => const EditProfileScreen(),
+        );
+      case AppRoutes.medicalInformation:
+        return MaterialPageRoute(
+          builder: (_) => const MedicalInformationScreen(),
+        );
       case AppRoutes.settings:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
+        );
+      case AppRoutes.notificationSettings:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationSettingsScreen(),
+        );
+      case AppRoutes.privacySecurity:
+        return MaterialPageRoute(
+          builder: (_) => const PrivacySecurityScreen(),
+        );
+      case AppRoutes.helpSupport:
+        return MaterialPageRoute(
+          builder: (_) => const HelpSupportScreen(),
+        );
+      case AppRoutes.about:
+        return MaterialPageRoute(
+          builder: (_) => const AboutScreen(),
         );
       default:
         return MaterialPageRoute(
