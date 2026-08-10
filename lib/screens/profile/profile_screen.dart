@@ -135,6 +135,9 @@ class ProfileScreen extends StatelessWidget {
                     ProfileMenuItem(
                       icon: Icons.folder_open,
                       title: 'Medical Records',
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.medicalRecords);
+                      },
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ProfileMenuItem(

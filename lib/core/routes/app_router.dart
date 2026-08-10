@@ -31,6 +31,11 @@ import '../../screens/settings/notification_settings_screen.dart';
 import '../../screens/settings/privacy_security_screen.dart';
 import '../../screens/settings/help_support_screen.dart';
 import '../../screens/settings/about_screen.dart';
+import '../../screens/medical_records/medical_records_screen.dart';
+import '../../screens/medical_records/medical_record_details_screen.dart';
+import '../../screens/medical_records/prescription_records_screen.dart';
+import '../../screens/medical_records/lab_reports_screen.dart';
+import '../../screens/medical_records/doctor_reports_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -160,6 +165,26 @@ class AppRouter {
       case AppRoutes.about:
         return MaterialPageRoute(
           builder: (_) => const AboutScreen(),
+        );
+      case AppRoutes.medicalRecords:
+        return MaterialPageRoute(
+          builder: (_) => const MedicalRecordsScreen(),
+        );
+      case AppRoutes.medicalRecordDetails:
+        return MaterialPageRoute(
+          builder: (_) => const MedicalRecordDetailsScreen(),
+        );
+      case AppRoutes.prescriptionRecords:
+        return MaterialPageRoute(
+          builder: (_) => const PrescriptionRecordsScreen(),
+        );
+      case AppRoutes.labReports:
+        return MaterialPageRoute(
+          builder: (_) => const LabReportsScreen(),
+        );
+      case AppRoutes.doctorReports:
+        return MaterialPageRoute(
+          builder: (_) => const DoctorReportsScreen(),
         );
       default:
         return MaterialPageRoute(

@@ -42,6 +42,9 @@ class QuickActionsGrid extends StatelessWidget {
           QuickActionCard(
             icon: Icons.folder_open,
             title: 'Medical\nRecords',
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.medicalRecords);
+            },
           ),
           QuickActionCard(
             icon: Icons.people,
