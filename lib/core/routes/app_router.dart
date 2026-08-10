@@ -13,6 +13,10 @@ import '../../screens/appointments/doctor_details_screen.dart';
 import '../../screens/appointments/book_appointment_screen.dart';
 import '../../screens/appointments/appointment_confirmation_screen.dart';
 import '../../screens/emergency/emergency_screen.dart';
+import '../../screens/emergency/emergency_home_screen.dart';
+import '../../screens/emergency/ambulance_request_screen.dart';
+import '../../screens/emergency/emergency_contacts_screen.dart';
+import '../../screens/emergency/first_aid_screen.dart';
 import '../../screens/pharmacy/pharmacy_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/settings/settings_screen.dart';
@@ -73,6 +77,22 @@ class AppRouter {
       case AppRoutes.emergency:
         return MaterialPageRoute(
           builder: (_) => const EmergencyScreen(),
+        );
+      case AppRoutes.emergencyHome:
+        return MaterialPageRoute(
+          builder: (_) => const EmergencyHomeScreen(),
+        );
+      case AppRoutes.ambulanceRequest:
+        return MaterialPageRoute(
+          builder: (_) => const AmbulanceRequestScreen(),
+        );
+      case AppRoutes.emergencyContacts:
+        return MaterialPageRoute(
+          builder: (_) => const EmergencyContactsScreen(),
+        );
+      case AppRoutes.firstAid:
+        return MaterialPageRoute(
+          builder: (_) => const FirstAidScreen(),
         );
       case AppRoutes.pharmacy:
         return MaterialPageRoute(

@@ -17,4 +17,8 @@ class AppRoutes {
   static const String doctorDetails = '/doctor-details';
   static const String bookAppointment = '/book-appointment';
   static const String appointmentConfirmation = '/appointment-confirmation';
+  static const String emergencyHome = '/emergency-home';
+  static const String ambulanceRequest = '/ambulance-request';
+  static const String emergencyContacts = '/emergency-contacts';
+  static const String firstAid = '/first-aid';
 }

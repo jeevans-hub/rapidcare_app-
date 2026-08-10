@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.errorRed,
         onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.emergency);
+          Navigator.pushNamed(context, AppRoutes.emergencyHome);
         },
         child: const Icon(Icons.emergency, color: Colors.white),
       ),
