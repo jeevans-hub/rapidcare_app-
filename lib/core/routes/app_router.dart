@@ -18,6 +18,11 @@ import '../../screens/emergency/ambulance_request_screen.dart';
 import '../../screens/emergency/emergency_contacts_screen.dart';
 import '../../screens/emergency/first_aid_screen.dart';
 import '../../screens/pharmacy/pharmacy_screen.dart';
+import '../../screens/pharmacy/pharmacy_home_screen.dart';
+import '../../screens/pharmacy/medicine_details_screen.dart';
+import '../../screens/pharmacy/pharmacy_cart_screen.dart';
+import '../../screens/pharmacy/prescription_screen.dart';
+import '../../screens/pharmacy/pharmacy_order_confirmation_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 
@@ -97,6 +102,26 @@ class AppRouter {
       case AppRoutes.pharmacy:
         return MaterialPageRoute(
           builder: (_) => const PharmacyScreen(),
+        );
+      case AppRoutes.pharmacyHome:
+        return MaterialPageRoute(
+          builder: (_) => const PharmacyHomeScreen(),
+        );
+      case AppRoutes.medicineDetails:
+        return MaterialPageRoute(
+          builder: (_) => const MedicineDetailsScreen(),
+        );
+      case AppRoutes.pharmacyCart:
+        return MaterialPageRoute(
+          builder: (_) => const PharmacyCartScreen(),
+        );
+      case AppRoutes.prescription:
+        return MaterialPageRoute(
+          builder: (_) => const PrescriptionScreen(),
+        );
+      case AppRoutes.pharmacyOrderConfirmation:
+        return MaterialPageRoute(
+          builder: (_) => const PharmacyOrderConfirmationScreen(),
         );
       case AppRoutes.profile:
         return MaterialPageRoute(

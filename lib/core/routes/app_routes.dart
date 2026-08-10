@@ -21,4 +21,9 @@ class AppRoutes {
   static const String ambulanceRequest = '/ambulance-request';
   static const String emergencyContacts = '/emergency-contacts';
   static const String firstAid = '/first-aid';
+  static const String pharmacyHome = '/pharmacy-home';
+  static const String medicineDetails = '/medicine-details';
+  static const String pharmacyCart = '/pharmacy-cart';
+  static const String prescription = '/prescription';
+  static const String pharmacyOrderConfirmation = '/pharmacy-order-confirmation';
 }
