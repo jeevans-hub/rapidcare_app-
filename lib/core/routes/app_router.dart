@@ -62,6 +62,13 @@ import '../../screens/health_insurance/insurance_claims_screen.dart';
 import '../../screens/health_insurance/insurance_claim_details_screen.dart';
 import '../../screens/health_insurance/insurance_documents_screen.dart';
 import '../../screens/health_insurance/insurance_help_screen.dart';
+import '../../screens/health_education/health_education_screen.dart';
+import '../../screens/health_education/health_article_details_screen.dart';
+import '../../screens/health_education/health_categories_screen.dart';
+import '../../screens/health_education/health_tips_screen.dart';
+import '../../screens/health_education/first_aid_screen.dart' as health_edu;
+import '../../screens/health_education/health_faq_screen.dart';
+import '../../screens/health_education/wellness_resources_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -315,6 +322,34 @@ class AppRouter {
       case AppRoutes.insuranceHelp:
         return MaterialPageRoute(
           builder: (_) => InsuranceHelpScreen(),
+        );
+      case AppRoutes.healthEducation:
+        return MaterialPageRoute(
+          builder: (_) => const HealthEducationScreen(),
+        );
+      case AppRoutes.healthArticleDetails:
+        return MaterialPageRoute(
+          builder: (_) => const HealthArticleDetailsScreen(),
+        );
+      case AppRoutes.healthCategories:
+        return MaterialPageRoute(
+          builder: (_) => HealthCategoriesScreen(),
+        );
+      case AppRoutes.healthTips:
+        return MaterialPageRoute(
+          builder: (_) => HealthTipsScreen(),
+        );
+      case AppRoutes.healthFirstAid:
+        return MaterialPageRoute(
+          builder: (_) => health_edu.HealthFirstAidScreen(),
+        );
+      case AppRoutes.healthFaq:
+        return MaterialPageRoute(
+          builder: (_) => HealthFaqScreen(),
+        );
+      case AppRoutes.wellnessResources:
+        return MaterialPageRoute(
+          builder: (_) => WellnessResourcesScreen(),
         );
       default:
         return MaterialPageRoute(

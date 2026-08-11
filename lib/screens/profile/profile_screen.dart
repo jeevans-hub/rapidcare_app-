@@ -157,6 +157,14 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ProfileMenuItem(
+                      icon: Icons.school,
+                      title: 'Health Education',
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.healthEducation);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ProfileMenuItem(
                       icon: Icons.contacts,
                       title: 'Emergency Contacts',
                       onTap: () {

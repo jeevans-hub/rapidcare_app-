@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/routes/app_routes.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../widgets/health/health_widgets.dart';
 
@@ -133,6 +135,38 @@ class HealthHomeScreen extends StatelessWidget {
                     description: 'Mindfulness and relaxation techniques can help manage stress effectively.',
                   ),
                 ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthEducation);
+                  },
+                  child: Card(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.school, size: 40, color: AppColors.primaryBlue),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Health Education', style: TextStyle(fontWeight: FontWeight.bold)),
+                                SizedBox(height: 4),
+                                Text('Learn more about health and wellness'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.primaryBlue),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
             ],

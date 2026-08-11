@@ -296,6 +296,38 @@ class _HealthcareServicesScreenState extends State<HealthcareServicesScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.lg),
+                const SectionTitle(
+                  title: 'Health Education',
+                ),
+                const SizedBox(height: AppSpacing.md),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthEducation);
+                  },
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.school, size: 40),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Health Education Resources'),
+                                SizedBox(height: 4),
+                                Text('Educational articles and wellness information'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xl),
               ],
             ),

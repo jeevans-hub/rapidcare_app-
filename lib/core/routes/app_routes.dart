@@ -63,4 +63,11 @@ class AppRoutes {
   static const String insuranceClaimDetails = '/insurance-claim-details';
   static const String insuranceDocuments = '/insurance-documents';
   static const String insuranceHelp = '/insurance-help';
+  static const String healthEducation = '/health-education';
+  static const String healthArticleDetails = '/health-article-details';
+  static const String healthCategories = '/health-categories';
+  static const String healthTips = '/health-tips';
+  static const String healthFirstAid = '/health-first-aid';
+  static const String healthFaq = '/health-faq';
+  static const String wellnessResources = '/wellness-resources';
 }
