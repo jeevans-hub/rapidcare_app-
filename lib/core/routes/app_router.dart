@@ -41,6 +41,8 @@ import '../../screens/health/health_metrics_screen.dart';
 import '../../screens/health/health_goals_screen.dart';
 import '../../screens/health/wellness_tips_screen.dart';
 import '../../screens/health/health_summary_screen.dart';
+import '../../screens/doctors/doctor_specialties_screen.dart';
+import '../../screens/doctors/doctor_reviews_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -90,6 +92,14 @@ class AppRouter {
       case AppRoutes.bookAppointment:
         return MaterialPageRoute(
           builder: (_) => const BookAppointmentScreen(),
+        );
+      case AppRoutes.doctorSpecialties:
+        return MaterialPageRoute(
+          builder: (_) => const DoctorSpecialtiesScreen(),
+        );
+      case AppRoutes.doctorReviews:
+        return MaterialPageRoute(
+          builder: (_) => const DoctorReviewsScreen(),
         );
       case AppRoutes.appointmentConfirmation:
         return MaterialPageRoute(

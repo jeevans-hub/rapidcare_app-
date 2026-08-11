@@ -16,6 +16,8 @@ class AppRoutes {
   static const String doctorList = '/doctor-list';
   static const String doctorDetails = '/doctor-details';
   static const String bookAppointment = '/book-appointment';
+  static const String doctorSpecialties = '/doctor-specialties';
+  static const String doctorReviews = '/doctor-reviews';
   static const String appointmentConfirmation = '/appointment-confirmation';
   static const String emergencyHome = '/emergency-home';
   static const String ambulanceRequest = '/ambulance-request';

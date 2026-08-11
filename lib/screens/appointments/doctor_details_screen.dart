@@ -6,6 +6,7 @@ import '../../core/theme/app_radius.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/appointments/doctor_rating_widget.dart';
+import '../../widgets/doctors/doctor_widgets.dart';
 
 class DoctorDetailsScreen extends StatelessWidget {
   const DoctorDetailsScreen({super.key});
@@ -77,13 +78,11 @@ class DoctorDetailsScreen extends StatelessWidget {
                       const SizedBox(height: AppSpacing.sm),
                       const DoctorRatingWidget(rating: 4.8, reviewCount: 234),
                       const SizedBox(height: AppSpacing.md),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          _StatItem(label: 'Experience', value: '12 Years'),
-                          _StatItem(label: 'Patients', value: '2.5K+'),
-                          _StatItem(label: 'Reviews', value: '234'),
-                        ],
+                      const DoctorStatisticsCard(
+                        patientsServed: 5000,
+                        yearsExperience: 12,
+                        rating: 4.8,
+                        reviewsCount: 320,
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       const SectionTitle(title: 'About Doctor'),
@@ -132,11 +131,76 @@ class DoctorDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
+                      DoctorExperienceCard(
+                        experiences: [
+                          ExperienceItem(
+                            hospital: 'City General Hospital',
+                            role: 'Senior Cardiologist',
+                            duration: '2018 - Present',
+                          ),
+                          ExperienceItem(
+                            hospital: 'Metro Medical Center',
+                            role: 'Cardiologist',
+                            duration: '2014 - 2018',
+                          ),
+                          ExperienceItem(
+                            hospital: 'St. Mary\'s Hospital',
+                            role: 'Resident Cardiologist',
+                            duration: '2012 - 2014',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      DoctorAwardsCard(
+                        awards: [
+                          AwardItem(
+                            title: 'Best Cardiologist Award',
+                            year: '2023',
+                            description: 'Awarded for excellence in patient care',
+                          ),
+                          AwardItem(
+                            title: 'Medical Research Excellence',
+                            year: '2021',
+                            description: 'Recognized for contributions to cardiac research',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
                       const SectionTitle(title: 'Available Timings'),
                       const SizedBox(height: AppSpacing.md),
-                      const Text(
-                        'Mon - Sat: 09:00 AM - 05:00 PM',
-                        style: TextStyle(fontSize: 14),
+                      const DoctorAvailabilityCard(
+                        todaySlots: [
+                          '10:00 AM',
+                          '11:30 AM',
+                          '02:00 PM',
+                          '04:30 PM',
+                        ],
+                        tomorrowSlots: [
+                          '09:00 AM',
+                          '11:00 AM',
+                          '03:00 PM',
+                          '05:00 PM',
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      DoctorReviewsSection(
+                        reviews: [
+                          ReviewItem(
+                            patientName: 'John Smith',
+                            rating: 5.0,
+                            date: 'Aug 10, 2026',
+                            reviewText: 'Excellent doctor, very professional and caring.',
+                          ),
+                          ReviewItem(
+                            patientName: 'Emily Johnson',
+                            rating: 5.0,
+                            date: 'Aug 8, 2026',
+                            reviewText: 'Dr. Sarah explained everything clearly. Highly recommended!',
+                          ),
+                        ],
+                        onViewAll: () {
+                          Navigator.pushNamed(context, AppRoutes.doctorReviews);
+                        },
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       Row(
@@ -176,40 +240,6 @@ class DoctorDetailsScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _StatItem({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primaryBlue,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondaryGrey,
-          ),
-        ),
-      ],
     );
   }
 }
