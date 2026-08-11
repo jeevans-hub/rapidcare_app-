@@ -55,4 +55,12 @@ class AppRoutes {
   static const String homeHealthcare = '/home-healthcare';
   static const String laboratoryServices = '/laboratory-services';
   static const String healthPackages = '/health-packages';
+  static const String healthInsurance = '/health-insurance';
+  static const String insurancePlanDetails = '/insurance-plan-details';
+  static const String insuranceCategories = '/insurance-categories';
+  static const String myInsurance = '/my-insurance';
+  static const String insuranceClaims = '/insurance-claims';
+  static const String insuranceClaimDetails = '/insurance-claim-details';
+  static const String insuranceDocuments = '/insurance-documents';
+  static const String insuranceHelp = '/insurance-help';
 }

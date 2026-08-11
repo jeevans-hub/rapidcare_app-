@@ -149,6 +149,14 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ProfileMenuItem(
+                      icon: Icons.shield,
+                      title: 'Health Insurance',
+                      onTap: () {
+                        Navigator.pushNamed(context, AppRoutes.healthInsurance);
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    ProfileMenuItem(
                       icon: Icons.contacts,
                       title: 'Emergency Contacts',
                       onTap: () {

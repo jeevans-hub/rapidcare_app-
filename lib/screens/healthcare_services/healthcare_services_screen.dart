@@ -264,6 +264,38 @@ class _HealthcareServicesScreenState extends State<HealthcareServicesScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.lg),
+                const SectionTitle(
+                  title: 'Health Insurance',
+                ),
+                const SizedBox(height: AppSpacing.md),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthInsurance);
+                  },
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.shield, size: 40),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Health Insurance Plans'),
+                                SizedBox(height: 4),
+                                Text('Protect your health with insurance coverage'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xl),
               ],
             ),

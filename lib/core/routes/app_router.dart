@@ -54,6 +54,14 @@ import '../../screens/healthcare_services/healthcare_service_categories_screen.d
 import '../../screens/healthcare_services/home_healthcare_screen.dart';
 import '../../screens/healthcare_services/laboratory_services_screen.dart';
 import '../../screens/healthcare_services/health_packages_screen.dart';
+import '../../screens/health_insurance/health_insurance_screen.dart';
+import '../../screens/health_insurance/insurance_plan_details_screen.dart';
+import '../../screens/health_insurance/insurance_categories_screen.dart';
+import '../../screens/health_insurance/my_insurance_screen.dart';
+import '../../screens/health_insurance/insurance_claims_screen.dart';
+import '../../screens/health_insurance/insurance_claim_details_screen.dart';
+import '../../screens/health_insurance/insurance_documents_screen.dart';
+import '../../screens/health_insurance/insurance_help_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -275,6 +283,38 @@ class AppRouter {
       case AppRoutes.healthPackages:
         return MaterialPageRoute(
           builder: (_) => HealthPackagesScreen(),
+        );
+      case AppRoutes.healthInsurance:
+        return MaterialPageRoute(
+          builder: (_) => const HealthInsuranceScreen(),
+        );
+      case AppRoutes.insurancePlanDetails:
+        return MaterialPageRoute(
+          builder: (_) => const InsurancePlanDetailsScreen(),
+        );
+      case AppRoutes.insuranceCategories:
+        return MaterialPageRoute(
+          builder: (_) => InsuranceCategoriesScreen(),
+        );
+      case AppRoutes.myInsurance:
+        return MaterialPageRoute(
+          builder: (_) => MyInsuranceScreen(),
+        );
+      case AppRoutes.insuranceClaims:
+        return MaterialPageRoute(
+          builder: (_) => InsuranceClaimsScreen(),
+        );
+      case AppRoutes.insuranceClaimDetails:
+        return MaterialPageRoute(
+          builder: (_) => InsuranceClaimDetailsScreen(),
+        );
+      case AppRoutes.insuranceDocuments:
+        return MaterialPageRoute(
+          builder: (_) => InsuranceDocumentsScreen(),
+        );
+      case AppRoutes.insuranceHelp:
+        return MaterialPageRoute(
+          builder: (_) => InsuranceHelpScreen(),
         );
       default:
         return MaterialPageRoute(
