@@ -31,6 +31,11 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String medicalInformation = '/medical-information';
   static const String notificationSettings = '/notification-settings';
+  static const String notifications = '/notifications';
+  static const String notificationDetails = '/notification-details';
+  static const String reminders = '/reminders';
+  static const String reminderDetails = '/reminder-details';
+  static const String notificationPreferences = '/notification-preferences';
   static const String privacySecurity = '/privacy-security';
   static const String helpSupport = '/help-support';
   static const String about = '/about';

@@ -44,7 +44,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.notifications,
                     title: 'Notifications',
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.notificationSettings);
+                      Navigator.pushNamed(context, AppRoutes.notificationPreferences);
                     },
                   ),
                   SettingsSwitchTile(

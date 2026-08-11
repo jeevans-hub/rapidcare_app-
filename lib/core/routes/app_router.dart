@@ -43,6 +43,11 @@ import '../../screens/health/wellness_tips_screen.dart';
 import '../../screens/health/health_summary_screen.dart';
 import '../../screens/doctors/doctor_specialties_screen.dart';
 import '../../screens/doctors/doctor_reviews_screen.dart';
+import '../../screens/notifications/notifications_screen.dart';
+import '../../screens/notifications/notification_details_screen.dart';
+import '../../screens/notifications/reminders_screen.dart';
+import '../../screens/notifications/reminder_details_screen.dart';
+import '../../screens/notifications/notification_preferences_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -168,6 +173,26 @@ class AppRouter {
       case AppRoutes.notificationSettings:
         return MaterialPageRoute(
           builder: (_) => const NotificationSettingsScreen(),
+        );
+      case AppRoutes.notifications:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationsScreen(),
+        );
+      case AppRoutes.notificationDetails:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationDetailsScreen(),
+        );
+      case AppRoutes.reminders:
+        return MaterialPageRoute(
+          builder: (_) => const RemindersScreen(),
+        );
+      case AppRoutes.reminderDetails:
+        return MaterialPageRoute(
+          builder: (_) => const ReminderDetailsScreen(),
+        );
+      case AppRoutes.notificationPreferences:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationPreferencesScreen(),
         );
       case AppRoutes.privacySecurity:
         return MaterialPageRoute(
