@@ -49,4 +49,10 @@ class AppRoutes {
   static const String healthGoals = '/health-goals';
   static const String wellnessTips = '/wellness-tips';
   static const String healthSummary = '/health-summary';
+  static const String healthcareServices = '/healthcare-services';
+  static const String healthcareServiceDetails = '/healthcare-service-details';
+  static const String healthcareServiceCategories = '/healthcare-service-categories';
+  static const String homeHealthcare = '/home-healthcare';
+  static const String laboratoryServices = '/laboratory-services';
+  static const String healthPackages = '/health-packages';
 }

@@ -48,6 +48,12 @@ import '../../screens/notifications/notification_details_screen.dart';
 import '../../screens/notifications/reminders_screen.dart';
 import '../../screens/notifications/reminder_details_screen.dart';
 import '../../screens/notifications/notification_preferences_screen.dart';
+import '../../screens/healthcare_services/healthcare_services_screen.dart';
+import '../../screens/healthcare_services/healthcare_service_details_screen.dart';
+import '../../screens/healthcare_services/healthcare_service_categories_screen.dart';
+import '../../screens/healthcare_services/home_healthcare_screen.dart';
+import '../../screens/healthcare_services/laboratory_services_screen.dart';
+import '../../screens/healthcare_services/health_packages_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -245,6 +251,30 @@ class AppRouter {
       case AppRoutes.healthSummary:
         return MaterialPageRoute(
           builder: (_) => const HealthSummaryScreen(),
+        );
+      case AppRoutes.healthcareServices:
+        return MaterialPageRoute(
+          builder: (_) => const HealthcareServicesScreen(),
+        );
+      case AppRoutes.healthcareServiceDetails:
+        return MaterialPageRoute(
+          builder: (_) => const HealthcareServiceDetailsScreen(),
+        );
+      case AppRoutes.healthcareServiceCategories:
+        return MaterialPageRoute(
+          builder: (_) => HealthcareServiceCategoriesScreen(),
+        );
+      case AppRoutes.homeHealthcare:
+        return MaterialPageRoute(
+          builder: (_) => HomeHealthcareScreen(),
+        );
+      case AppRoutes.laboratoryServices:
+        return MaterialPageRoute(
+          builder: (_) => LaboratoryServicesScreen(),
+        );
+      case AppRoutes.healthPackages:
+        return MaterialPageRoute(
+          builder: (_) => HealthPackagesScreen(),
         );
       default:
         return MaterialPageRoute(
