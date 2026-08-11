@@ -37,4 +37,9 @@ class AppRoutes {
   static const String prescriptionRecords = '/prescription-records';
   static const String labReports = '/lab-reports';
   static const String doctorReports = '/doctor-reports';
+  static const String healthHome = '/health-home';
+  static const String healthMetrics = '/health-metrics';
+  static const String healthGoals = '/health-goals';
+  static const String wellnessTips = '/wellness-tips';
+  static const String healthSummary = '/health-summary';
 }

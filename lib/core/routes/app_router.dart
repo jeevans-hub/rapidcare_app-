@@ -36,6 +36,11 @@ import '../../screens/medical_records/medical_record_details_screen.dart';
 import '../../screens/medical_records/prescription_records_screen.dart';
 import '../../screens/medical_records/lab_reports_screen.dart';
 import '../../screens/medical_records/doctor_reports_screen.dart';
+import '../../screens/health/health_home_screen.dart';
+import '../../screens/health/health_metrics_screen.dart';
+import '../../screens/health/health_goals_screen.dart';
+import '../../screens/health/wellness_tips_screen.dart';
+import '../../screens/health/health_summary_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -185,6 +190,26 @@ class AppRouter {
       case AppRoutes.doctorReports:
         return MaterialPageRoute(
           builder: (_) => const DoctorReportsScreen(),
+        );
+      case AppRoutes.healthHome:
+        return MaterialPageRoute(
+          builder: (_) => const HealthHomeScreen(),
+        );
+      case AppRoutes.healthMetrics:
+        return MaterialPageRoute(
+          builder: (_) => const HealthMetricsScreen(),
+        );
+      case AppRoutes.healthGoals:
+        return MaterialPageRoute(
+          builder: (_) => const HealthGoalsScreen(),
+        );
+      case AppRoutes.wellnessTips:
+        return MaterialPageRoute(
+          builder: (_) => const WellnessTipsScreen(),
+        );
+      case AppRoutes.healthSummary:
+        return MaterialPageRoute(
+          builder: (_) => const HealthSummaryScreen(),
         );
       default:
         return MaterialPageRoute(
