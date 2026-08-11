@@ -46,7 +46,6 @@ class AppRoutes {
   static const String doctorReports = '/doctor-reports';
   static const String healthHome = '/health-home';
   static const String healthMetrics = '/health-metrics';
-  static const String healthGoals = '/health-goals';
   static const String wellnessTips = '/wellness-tips';
   static const String healthSummary = '/health-summary';
   static const String healthcareServices = '/healthcare-services';
@@ -70,4 +69,11 @@ class AppRoutes {
   static const String healthFirstAid = '/health-first-aid';
   static const String healthFaq = '/health-faq';
   static const String wellnessResources = '/wellness-resources';
+  static const String healthMonitoring = '/health-monitoring';
+  static const String healthMetricDetails = '/health-metric-details';
+  static const String healthVitals = '/health-vitals';
+  static const String healthActivity = '/health-activity';
+  static const String healthGoals = '/health-goals-monitoring';
+  static const String healthHistory = '/health-history';
+  static const String healthMonitoringHelp = '/health-monitoring-help';
 }

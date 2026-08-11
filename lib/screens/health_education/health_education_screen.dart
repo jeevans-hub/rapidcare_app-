@@ -250,6 +250,15 @@ class _HealthEducationScreenState extends State<HealthEducationScreen> {
                 ),
                 const Divider(),
                 ListTile(
+                  leading: const Icon(Icons.monitor_heart),
+                  title: const Text('Health Monitoring'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthMonitoring);
+                  },
+                ),
+                const Divider(),
+                ListTile(
                   leading: const Icon(Icons.library_books),
                   title: const Text('Wellness Resources'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),

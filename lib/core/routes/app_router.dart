@@ -38,7 +38,6 @@ import '../../screens/medical_records/lab_reports_screen.dart';
 import '../../screens/medical_records/doctor_reports_screen.dart';
 import '../../screens/health/health_home_screen.dart';
 import '../../screens/health/health_metrics_screen.dart';
-import '../../screens/health/health_goals_screen.dart';
 import '../../screens/health/wellness_tips_screen.dart';
 import '../../screens/health/health_summary_screen.dart';
 import '../../screens/doctors/doctor_specialties_screen.dart';
@@ -69,6 +68,13 @@ import '../../screens/health_education/health_tips_screen.dart';
 import '../../screens/health_education/first_aid_screen.dart' as health_edu;
 import '../../screens/health_education/health_faq_screen.dart';
 import '../../screens/health_education/wellness_resources_screen.dart';
+import '../../screens/health_monitoring/health_monitoring_screen.dart';
+import '../../screens/health_monitoring/health_metric_details_screen.dart';
+import '../../screens/health_monitoring/health_vitals_screen.dart';
+import '../../screens/health_monitoring/health_activity_screen.dart';
+import '../../screens/health_monitoring/health_goals_screen.dart' as health_monitoring;
+import '../../screens/health_monitoring/health_history_screen.dart';
+import '../../screens/health_monitoring/health_monitoring_help_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -255,10 +261,6 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const HealthMetricsScreen(),
         );
-      case AppRoutes.healthGoals:
-        return MaterialPageRoute(
-          builder: (_) => const HealthGoalsScreen(),
-        );
       case AppRoutes.wellnessTips:
         return MaterialPageRoute(
           builder: (_) => const WellnessTipsScreen(),
@@ -350,6 +352,34 @@ class AppRouter {
       case AppRoutes.wellnessResources:
         return MaterialPageRoute(
           builder: (_) => WellnessResourcesScreen(),
+        );
+      case AppRoutes.healthMonitoring:
+        return MaterialPageRoute(
+          builder: (_) => const HealthMonitoringScreen(),
+        );
+      case AppRoutes.healthMetricDetails:
+        return MaterialPageRoute(
+          builder: (_) => const HealthMetricDetailsScreen(),
+        );
+      case AppRoutes.healthVitals:
+        return MaterialPageRoute(
+          builder: (_) => HealthVitalsScreen(),
+        );
+      case AppRoutes.healthActivity:
+        return MaterialPageRoute(
+          builder: (_) => HealthActivityScreen(),
+        );
+      case AppRoutes.healthGoals:
+        return MaterialPageRoute(
+          builder: (_) => health_monitoring.HealthGoalsScreen(),
+        );
+      case AppRoutes.healthHistory:
+        return MaterialPageRoute(
+          builder: (_) => HealthHistoryScreen(),
+        );
+      case AppRoutes.healthMonitoringHelp:
+        return MaterialPageRoute(
+          builder: (_) => HealthMonitoringHelpScreen(),
         );
       default:
         return MaterialPageRoute(

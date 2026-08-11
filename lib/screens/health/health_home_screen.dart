@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../widgets/health/health_widgets.dart';
 
 class HealthHomeScreen extends StatelessWidget {
@@ -155,13 +156,45 @@ class HealthHomeScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Health Education', style: TextStyle(fontWeight: FontWeight.bold)),
+                                Text('Health Education', style: AppTextStyles.title),
                                 SizedBox(height: 4),
                                 Text('Learn more about health and wellness'),
                               ],
                             ),
                           ),
                           Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.primaryBlue),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthMonitoring);
+                  },
+                  child: Card(
+                    color: AppColors.secondaryTeal.withValues(alpha: 0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.monitor_heart, size: 40, color: AppColors.secondaryTeal),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Health Monitoring', style: AppTextStyles.title),
+                                SizedBox(height: 4),
+                                Text('Track your health metrics and activity'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.secondaryTeal),
                         ],
                       ),
                     ),
