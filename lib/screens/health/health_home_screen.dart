@@ -25,14 +25,19 @@ class HealthHomeScreen extends StatelessWidget {
                 child: HealthHeader(),
               ),
               const SizedBox(height: AppSpacing.lg),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: HealthSummaryCard(
-                  overallHealth: 'Good',
-                  dailyActivity: '6,420 steps',
-                  waterIntake: '5 / 8 glasses',
-                  sleep: '7h 20m',
-                  exercise: '35 minutes',
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthSummary);
+                  },
+                  child: const HealthSummaryCard(
+                    overallHealth: 'Good',
+                    dailyActivity: '6,420 steps',
+                    waterIntake: '5 / 8 glasses',
+                    sleep: '7h 20m',
+                    exercise: '35 minutes',
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -100,6 +105,70 @@ class HealthHomeScreen extends StatelessWidget {
                       progress: 1.0,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthMetrics);
+                  },
+                  child: Card(
+                    color: AppColors.secondaryTeal.withValues(alpha: 0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.analytics, size: 40, color: AppColors.secondaryTeal),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Health Metrics', style: AppTextStyles.title),
+                                SizedBox(height: 4),
+                                Text('View detailed health metrics'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.secondaryTeal),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.wellnessTips);
+                  },
+                  child: Card(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lightbulb, size: 40, color: AppColors.primaryBlue),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Wellness Tips', style: AppTextStyles.title),
+                                SizedBox(height: 4),
+                                Text('Explore wellness tips and advice'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.primaryBlue),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),

@@ -11,6 +11,14 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? record =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final title = record?['title']?.toString() ?? 'Blood Test';
+    final hospital = record?['hospital']?.toString() ?? 'City Care Hospital';
+    final date = record?['date']?.toString() ?? '10 Aug 2026';
+    final type = record?['type']?.toString() ?? 'Lab Report';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Medical Record'),
@@ -37,28 +45,28 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  'Blood Test',
+                  title,
                   style: AppTextStyles.headline,
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  'City Care Hospital',
+                  hospital,
                   style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  '10 Aug 2026',
+                  date,
                   style: AppTextStyles.caption,
                   textAlign: TextAlign.center,
                 ),
@@ -74,8 +82,8 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
                     color: AppColors.warningOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.small),
                   ),
-                  child: const Text(
-                    'Lab Report',
+                  child: Text(
+                    type,
                     style: AppTextStyles.caption,
                   ),
                 ),

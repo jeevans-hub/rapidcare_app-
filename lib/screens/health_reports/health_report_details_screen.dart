@@ -25,8 +25,8 @@ class HealthReportDetailsScreen extends StatelessWidget {
       );
     }
 
-    final title = report['title'] as String;
-    final category = report['category'] as String;
+    final title = report['title']?.toString() ?? 'Unknown Report';
+    final category = report['category']?.toString() ?? 'Unknown Category';
 
     return Scaffold(
       appBar: AppBar(

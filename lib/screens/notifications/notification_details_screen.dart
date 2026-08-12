@@ -10,6 +10,16 @@ class NotificationDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? notification =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final title = notification?['title']?.toString() ?? 'Appointment Reminder';
+    final description = notification?['description']?.toString() ?? 'Your appointment details';
+    final category = notification?['category']?.toString() ?? 'Appointment';
+    final date = notification?['date']?.toString() ?? 'Aug 12, 2026';
+    final time = notification?['time']?.toString() ?? '10:00 AM';
+    final type = notification?['type'];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notification Details'),
@@ -21,15 +31,25 @@ class NotificationDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const NotificationTypeIcon(type: NotificationType.appointment),
+                NotificationTypeIcon(
+                  type: type == 'medicine'
+                      ? NotificationType.medicine
+                      : type == 'health'
+                          ? NotificationType.health
+                          : type == 'pharmacy'
+                              ? NotificationType.pharmacy
+                              : type == 'emergency'
+                                  ? NotificationType.emergency
+                                  : NotificationType.appointment,
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'Appointment Reminder',
+                  title,
                   style: AppTextStyles.title,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Your appointment with Dr. Sarah Johnson is tomorrow at 10:00 AM.',
+                  description,
                   style: AppTextStyles.body.copyWith(
                     color: AppColors.textSecondaryGrey,
                     height: 1.5,
@@ -39,19 +59,19 @@ class NotificationDetailsScreen extends StatelessWidget {
                 _InfoRow(
                   icon: Icons.category,
                   label: 'Category',
-                  value: 'Appointment',
+                  value: category,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _InfoRow(
                   icon: Icons.calendar_today,
                   label: 'Date',
-                  value: 'Aug 12, 2026',
+                  value: date,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _InfoRow(
                   icon: Icons.access_time,
                   label: 'Time',
-                  value: '10:00 AM',
+                  value: time,
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 Row(

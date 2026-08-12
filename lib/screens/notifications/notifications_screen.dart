@@ -20,8 +20,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         title: const Text('Notifications'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {},
+            icon: const Icon(Icons.alarm),
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.reminders);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.notificationPreferences);
+            },
           ),
         ],
       ),
@@ -65,7 +73,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: '2 hours ago',
                       isRead: false,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.notificationDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notificationDetails,
+                          arguments: {
+                            'title': 'Appointment Reminder',
+                            'description': 'Your appointment with Dr. Sarah Johnson is tomorrow at 10:00 AM.',
+                            'category': 'Appointment',
+                            'date': 'Aug 12, 2026',
+                            'time': '10:00 AM',
+                            'type': 'appointment',
+                          },
+                        );
                       },
                     ),
                     NotificationItem(
@@ -75,7 +94,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: '4 hours ago',
                       isRead: false,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.notificationDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notificationDetails,
+                          arguments: {
+                            'title': 'Medicine Reminder',
+                            'description': 'Time to take your scheduled medicine.',
+                            'category': 'Medicine',
+                            'date': 'Aug 12, 2026',
+                            'time': '08:00 AM',
+                            'type': 'medicine',
+                          },
+                        );
                       },
                     ),
                     NotificationItem(
@@ -85,7 +115,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: '6 hours ago',
                       isRead: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.notificationDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notificationDetails,
+                          arguments: {
+                            'title': 'Health Reminder',
+                            'description': 'Remember to stay hydrated throughout the day.',
+                            'category': 'Health',
+                            'date': 'Aug 12, 2026',
+                            'time': '02:00 PM',
+                            'type': 'health',
+                          },
+                        );
                       },
                     ),
                   ],
@@ -101,7 +142,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: 'Yesterday',
                       isRead: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.notificationDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notificationDetails,
+                          arguments: {
+                            'title': 'Pharmacy Update',
+                            'description': 'Your pharmacy order has been confirmed.',
+                            'category': 'Pharmacy',
+                            'date': 'Aug 11, 2026',
+                            'time': '03:30 PM',
+                            'type': 'pharmacy',
+                          },
+                        );
                       },
                     ),
                     NotificationItem(
@@ -111,7 +163,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: 'Yesterday',
                       isRead: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.notificationDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notificationDetails,
+                          arguments: {
+                            'title': 'Emergency Information',
+                            'description': 'Emergency contact information has been updated.',
+                            'category': 'Emergency',
+                            'date': 'Aug 11, 2026',
+                            'time': '11:00 AM',
+                            'type': 'emergency',
+                          },
+                        );
                       },
                     ),
                   ],
@@ -127,7 +190,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       time: '3 days ago',
                       isRead: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.notificationDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.notificationDetails,
+                          arguments: {
+                            'title': 'Profile Updated',
+                            'description': 'Your RapidCare profile was successfully updated.',
+                            'category': 'General',
+                            'date': 'Aug 9, 2026',
+                            'time': '05:45 PM',
+                            'type': 'general',
+                          },
+                        );
                       },
                     ),
                   ],

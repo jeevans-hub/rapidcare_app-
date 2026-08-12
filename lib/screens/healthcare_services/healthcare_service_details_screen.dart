@@ -54,7 +54,7 @@ class HealthcareServiceDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  service['name'] as String,
+                  service['name']?.toString() ?? 'Unknown',
                   style: AppTextStyles.headline,
                   textAlign: TextAlign.center,
                 ),
@@ -70,7 +70,7 @@ class HealthcareServiceDetailsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.medium),
                     ),
                     child: Text(
-                      service['category'] as String,
+                      service['category']?.toString() ?? 'Unknown',
                       style: AppTextStyles.caption,
                     ),
                   ),
@@ -79,13 +79,13 @@ class HealthcareServiceDetailsScreen extends StatelessWidget {
                 HealthcareServiceInfoCard(
                   icon: Icons.description,
                   title: 'Description',
-                  content: service['description'] as String,
+                  content: service['description']?.toString() ?? 'Not Specified',
                 ),
                 const SizedBox(height: AppSpacing.md),
                 HealthcareServiceInfoCard(
                   icon: Icons.list,
                   title: 'Services Included',
-                  content: _getIncludedServices(service['name'] as String),
+                  content: _getIncludedServices(service['name']?.toString() ?? 'Unknown'),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 HealthcareServiceInfoCard(

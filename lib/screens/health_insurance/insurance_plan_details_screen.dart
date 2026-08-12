@@ -53,7 +53,7 @@ class InsurancePlanDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  plan['planName'] as String,
+                  plan['planName']?.toString() ?? 'Unknown',
                   style: AppTextStyles.headline,
                   textAlign: TextAlign.center,
                 ),
@@ -69,7 +69,7 @@ class InsurancePlanDetailsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.medium),
                     ),
                     child: Text(
-                      plan['category'] as String,
+                      plan['category']?.toString() ?? 'Unknown',
                       style: AppTextStyles.caption,
                     ),
                   ),
@@ -77,30 +77,30 @@ class InsurancePlanDetailsScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 InsuranceCoverageCard(
                   title: 'Coverage Amount',
-                  coverageAmount: plan['coverageAmount'] as String,
+                  coverageAmount: plan['coverageAmount']?.toString() ?? 'N/A',
                   description: 'Sum insured for the policy',
                 ),
                 const SizedBox(height: AppSpacing.md),
                 InsuranceInfoCard(
                   icon: Icons.payments,
                   title: 'Illustrative Premium',
-                  content: plan['premium'] as String,
+                  content: plan['premium']?.toString() ?? 'N/A',
                 ),
                 const SizedBox(height: AppSpacing.md),
                 InsuranceInfoCard(
                   icon: Icons.description,
                   title: 'Description',
-                  content: plan['description'] as String,
+                  content: plan['description']?.toString() ?? 'Not Specified',
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 InsuranceBenefitsCard(
                   title: 'Key Benefits',
-                  benefits: _getPlanBenefits(plan['planName'] as String),
+                  benefits: _getPlanBenefits(plan['planName']?.toString() ?? 'Unknown'),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 InsuranceBenefitsCard(
                   title: 'Coverage Details',
-                  benefits: _getCoverageDetails(plan['planName'] as String),
+                  benefits: _getCoverageDetails(plan['planName']?.toString() ?? 'Unknown'),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 InsuranceBenefitsCard(

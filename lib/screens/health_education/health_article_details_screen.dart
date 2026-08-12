@@ -55,7 +55,7 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  article['title'] as String,
+                  article['title']?.toString() ?? 'Unknown',
                   style: AppTextStyles.headline,
                   textAlign: TextAlign.center,
                 ),
@@ -71,7 +71,7 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppRadius.medium),
                     ),
                     child: Text(
-                      article['category'] as String,
+                      article['category']?.toString() ?? 'Unknown',
                       style: AppTextStyles.caption,
                     ),
                   ),
@@ -80,26 +80,26 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                 HealthEducationInfoCard(
                   icon: Icons.access_time,
                   title: 'Reading Time',
-                  content: article['readingTime'] as String,
+                  content: article['readingTime']?.toString() ?? 'Not Specified',
                 ),
                 const SizedBox(height: AppSpacing.md),
                 const SectionTitle(title: 'Introduction'),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  _getArticleIntroduction(article['title'] as String),
+                  _getArticleIntroduction(article['title']?.toString() ?? 'Unknown'),
                   style: AppTextStyles.body,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 const SectionTitle(title: 'Why It Matters'),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  _getWhyItMatters(article['title'] as String),
+                  _getWhyItMatters(article['title']?.toString() ?? 'Unknown'),
                   style: AppTextStyles.body,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 const SectionTitle(title: 'Healthy Habits'),
                 const SizedBox(height: AppSpacing.sm),
-                ..._getHealthyHabits(article['title'] as String).map((habit) => Padding(
+                ..._getHealthyHabits(article['title']?.toString() ?? 'Unknown').map((habit) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +114,7 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
                 const SectionTitle(title: 'Prevention Basics'),
                 const SizedBox(height: AppSpacing.sm),
-                ..._getPreventionBasics(article['title'] as String).map((prevention) => Padding(
+                ..._getPreventionBasics(article['title']?.toString() ?? 'Unknown').map((prevention) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +130,7 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                 const SectionTitle(title: 'When to Seek Professional Help'),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  _getWhenToSeekHelp(article['title'] as String),
+                  _getWhenToSeekHelp(article['title']?.toString() ?? 'Unknown'),
                   style: AppTextStyles.body,
                 ),
                 const SizedBox(height: AppSpacing.xl),

@@ -13,6 +13,18 @@ class DoctorDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? doctor =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final doctorName = doctor?['doctorName']?.toString() ?? 'Dr. Sarah Johnson';
+    final qualification = doctor?['qualification']?.toString() ?? 'MBBS, MD';
+    final specialization = doctor?['specialization']?.toString() ?? 'Cardiologist';
+    final hospital = doctor?['hospital']?.toString() ?? 'City General Hospital';
+    final experience = doctor?['experience']?.toString() ?? '12';
+    final rating = doctor?['rating']?.toString() ?? '4.8';
+    final reviewCount = doctor?['reviewCount']?.toString() ?? '234';
+    final fee = doctor?['fee']?.toString() ?? '600';
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -60,29 +72,32 @@ class DoctorDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      const Text(
-                        'Dr. Sarah Johnson',
-                        style: TextStyle(
+                      Text(
+                        doctorName,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'MBBS, MD - Cardiologist',
+                      Text(
+                        '$qualification - $specialization',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondaryGrey,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      const DoctorRatingWidget(rating: 4.8, reviewCount: 234),
+                      DoctorRatingWidget(
+                        rating: double.tryParse(rating) ?? 4.8,
+                        reviewCount: int.tryParse(reviewCount) ?? 234,
+                      ),
                       const SizedBox(height: AppSpacing.md),
-                      const DoctorStatisticsCard(
+                      DoctorStatisticsCard(
                         patientsServed: 5000,
-                        yearsExperience: 12,
-                        rating: 4.8,
-                        reviewsCount: 320,
+                        yearsExperience: int.tryParse(experience) ?? 12,
+                        rating: double.tryParse(rating) ?? 4.8,
+                        reviewsCount: int.tryParse(reviewCount) ?? 320,
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       const SectionTitle(title: 'About Doctor'),
@@ -109,15 +124,15 @@ class DoctorDetailsScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.local_hospital),
                             const SizedBox(width: AppSpacing.md),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'City General Hospital',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    hospital,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                  Text(
+                                  const Text(
                                     '123 Medical Center, New York',
                                     style: TextStyle(
                                       fontSize: 12,
@@ -215,7 +230,7 @@ class DoctorDetailsScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '₹600',
+                            '₹$fee',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,

@@ -34,7 +34,19 @@ class RemindersScreen extends StatelessWidget {
                       status: ReminderStatus.active,
                       isEnabled: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.reminderDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.reminderDetails,
+                          arguments: {
+                            'title': 'Doctor Appointment',
+                            'description': 'Dr. Sarah Johnson',
+                            'category': 'Appointment',
+                            'date': 'Aug 12, 2026',
+                            'time': '10:00 AM',
+                            'repeat': 'Once',
+                            'status': 'Active',
+                          },
+                        );
                       },
                       onToggle: () {},
                     ),
@@ -46,7 +58,19 @@ class RemindersScreen extends StatelessWidget {
                       status: ReminderStatus.active,
                       isEnabled: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.reminderDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.reminderDetails,
+                          arguments: {
+                            'title': 'Take Medicine',
+                            'description': 'Daily medicine reminder',
+                            'category': 'Medicine',
+                            'date': 'Aug 11, 2026',
+                            'time': '08:00 PM',
+                            'repeat': 'Daily',
+                            'status': 'Active',
+                          },
+                        );
                       },
                       onToggle: () {},
                     ),
@@ -58,7 +82,19 @@ class RemindersScreen extends StatelessWidget {
                       status: ReminderStatus.completed,
                       isEnabled: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.reminderDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.reminderDetails,
+                          arguments: {
+                            'title': 'Drink Water',
+                            'description': 'Drink 8 glasses of water',
+                            'category': 'Health',
+                            'date': 'Aug 11, 2026',
+                            'time': '06:00 PM',
+                            'repeat': 'Daily',
+                            'status': 'Completed',
+                          },
+                        );
                       },
                       onToggle: () {},
                     ),
@@ -70,7 +106,19 @@ class RemindersScreen extends StatelessWidget {
                       status: ReminderStatus.completed,
                       isEnabled: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.reminderDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.reminderDetails,
+                          arguments: {
+                            'title': 'Exercise',
+                            'description': '30 minute walk',
+                            'category': 'Health',
+                            'date': 'Aug 11, 2026',
+                            'time': '07:00 AM',
+                            'repeat': 'Daily',
+                            'status': 'Completed',
+                          },
+                        );
                       },
                       onToggle: () {},
                     ),
@@ -82,7 +130,19 @@ class RemindersScreen extends StatelessWidget {
                       status: ReminderStatus.active,
                       isEnabled: true,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.reminderDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.reminderDetails,
+                          arguments: {
+                            'title': 'Sleep',
+                            'description': 'Prepare for bedtime',
+                            'category': 'Health',
+                            'date': 'Aug 11, 2026',
+                            'time': '10:00 PM',
+                            'repeat': 'Daily',
+                            'status': 'Active',
+                          },
+                        );
                       },
                       onToggle: () {},
                     ),
@@ -94,7 +154,19 @@ class RemindersScreen extends StatelessWidget {
                       status: ReminderStatus.paused,
                       isEnabled: false,
                       onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.reminderDetails);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.reminderDetails,
+                          arguments: {
+                            'title': 'Prescription Refill',
+                            'description': 'Refill monthly prescription',
+                            'category': 'Medicine',
+                            'date': 'Aug 15, 2026',
+                            'time': '09:00 AM',
+                            'repeat': 'Monthly',
+                            'status': 'Paused',
+                          },
+                        );
                       },
                       onToggle: () {},
                     ),

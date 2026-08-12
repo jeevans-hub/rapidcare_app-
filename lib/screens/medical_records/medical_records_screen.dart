@@ -136,6 +136,38 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.prescriptionRecords);
+                      },
+                      icon: const Icon(Icons.medication),
+                      label: const Text('View Prescriptions'),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.labReports);
+                      },
+                      icon: const Icon(Icons.biotech),
+                      label: const Text('View Lab Reports'),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.doctorReports);
+                      },
+                      icon: const Icon(Icons.local_hospital),
+                      label: const Text('View Doctor Reports'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: CustomTextField(
@@ -172,7 +204,16 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                         date: record.date,
                         type: record.type,
                         onTap: () {
-                          Navigator.pushNamed(context, AppRoutes.medicalRecordDetails);
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.medicalRecordDetails,
+                            arguments: {
+                              'title': record.title,
+                              'hospital': record.doctorOrHospital,
+                              'date': record.date,
+                              'type': record.type,
+                            },
+                          );
                         },
                       ),
                     );

@@ -25,9 +25,9 @@ class HealthMetricDetailsScreen extends StatelessWidget {
       );
     }
 
-    final metricName = metric['metricName'] as String;
-    final value = metric['value'] as String;
-    final unit = metric['unit'] as String;
+    final metricName = metric['metricName']?.toString() ?? 'Unknown Metric';
+    final value = metric['value']?.toString() ?? 'Unknown';
+    final unit = metric['unit']?.toString() ?? '';
 
     return Scaffold(
       appBar: AppBar(

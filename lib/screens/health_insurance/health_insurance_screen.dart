@@ -227,6 +227,54 @@ class _HealthInsuranceScreenState extends State<HealthInsuranceScreen> {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.insuranceCategories);
+                        },
+                        icon: const Icon(Icons.category),
+                        label: const Text('View Categories'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.myInsurance);
+                        },
+                        icon: const Icon(Icons.folder),
+                        label: const Text('My Insurance'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.insuranceClaims);
+                        },
+                        icon: const Icon(Icons.description),
+                        label: const Text('View Claims'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.insuranceDocuments);
+                        },
+                        icon: const Icon(Icons.file_present),
+                        label: const Text('View Documents'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.insuranceHelp);
+                        },
+                        icon: const Icon(Icons.help),
+                        label: const Text('Get Help'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
                 Card(
                   color: AppColors.warningOrange.withValues(alpha: 0.1),
                   child: Padding(

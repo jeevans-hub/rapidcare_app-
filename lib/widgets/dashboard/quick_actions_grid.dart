@@ -12,7 +12,7 @@ class QuickActionsGrid extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final crossAxisCount = constraints.maxWidth > 600 ? 4 : 3;
+          final crossAxisCount = constraints.maxWidth > 600 ? 3 : 3;
           
           return GridView.count(
             shrinkWrap: true,
@@ -48,6 +48,13 @@ class QuickActionsGrid extends StatelessWidget {
                 title: 'Health\nReports',
                 onTap: () {
                   Navigator.pushNamed(context, AppRoutes.healthReports);
+                },
+              ),
+              QuickActionCard(
+                icon: Icons.favorite,
+                title: 'Health &\nWellness',
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.healthHome);
                 },
               ),
               QuickActionCard(

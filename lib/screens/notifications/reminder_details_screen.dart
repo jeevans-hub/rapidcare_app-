@@ -10,6 +10,17 @@ class ReminderDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? reminder =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    final title = reminder?['title']?.toString() ?? 'Doctor Appointment';
+    final description = reminder?['description']?.toString() ?? 'Dr. Sarah Johnson';
+    final category = reminder?['category']?.toString() ?? 'Appointment';
+    final date = reminder?['date']?.toString() ?? 'Aug 12, 2026';
+    final time = reminder?['time']?.toString() ?? '10:00 AM';
+    final repeat = reminder?['repeat']?.toString() ?? 'Once';
+    final status = reminder?['status']?.toString() ?? 'Active';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reminder Details'),
@@ -36,12 +47,12 @@ class ReminderDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'Doctor Appointment',
+                  title,
                   style: AppTextStyles.title,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Dr. Sarah Johnson',
+                  description,
                   style: AppTextStyles.body.copyWith(
                     color: AppColors.textSecondaryGrey,
                   ),
@@ -50,31 +61,31 @@ class ReminderDetailsScreen extends StatelessWidget {
                 _InfoSection(
                   icon: Icons.category,
                   label: 'Category',
-                  value: 'Appointment',
+                  value: category,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _InfoSection(
                   icon: Icons.calendar_today,
                   label: 'Date',
-                  value: 'Aug 12, 2026',
+                  value: date,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _InfoSection(
                   icon: Icons.access_time,
                   label: 'Time',
-                  value: '10:00 AM',
+                  value: time,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _InfoSection(
                   icon: Icons.repeat,
                   label: 'Repeat',
-                  value: 'Once',
+                  value: repeat,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _InfoSection(
                   icon: Icons.check_circle,
                   label: 'Status',
-                  value: 'Active',
+                  value: status,
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 Row(

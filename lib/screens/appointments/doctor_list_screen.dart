@@ -39,7 +39,20 @@ class DoctorListScreen extends StatelessWidget {
                 reviewCount: 234,
                 fee: 600,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.doctorDetails);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.doctorDetails,
+                    arguments: {
+                      'doctorName': 'Dr. Sarah Johnson',
+                      'qualification': 'MBBS, MD',
+                      'specialization': 'Cardiologist',
+                      'hospital': 'City General Hospital',
+                      'experience': 12,
+                      'rating': 4.8,
+                      'reviewCount': 234,
+                      'fee': 600,
+                    },
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.md),
@@ -53,7 +66,20 @@ class DoctorListScreen extends StatelessWidget {
                 reviewCount: 189,
                 fee: 500,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.doctorDetails);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.doctorDetails,
+                    arguments: {
+                      'doctorName': 'Dr. Michael Lee',
+                      'qualification': 'MBBS, MD',
+                      'specialization': 'Dermatologist',
+                      'hospital': 'St. Mary\'s Medical Center',
+                      'experience': 8,
+                      'rating': 4.6,
+                      'reviewCount': 189,
+                      'fee': 500,
+                    },
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.md),
@@ -67,7 +93,20 @@ class DoctorListScreen extends StatelessWidget {
                 reviewCount: 312,
                 fee: 700,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.doctorDetails);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.doctorDetails,
+                    arguments: {
+                      'doctorName': 'Dr. Emily Brown',
+                      'qualification': 'MBBS, MS',
+                      'specialization': 'Orthopedic Surgeon',
+                      'hospital': 'Riverside Clinic',
+                      'experience': 15,
+                      'rating': 4.9,
+                      'reviewCount': 312,
+                      'fee': 700,
+                    },
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.md),
@@ -81,7 +120,20 @@ class DoctorListScreen extends StatelessWidget {
                 reviewCount: 156,
                 fee: 650,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.doctorDetails);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.doctorDetails,
+                    arguments: {
+                      'doctorName': 'Dr. David Wilson',
+                      'qualification': 'MBBS, MD',
+                      'specialization': 'Neurologist',
+                      'hospital': 'City General Hospital',
+                      'experience': 10,
+                      'rating': 4.7,
+                      'reviewCount': 156,
+                      'fee': 650,
+                    },
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.md),
@@ -95,7 +147,20 @@ class DoctorListScreen extends StatelessWidget {
                 reviewCount: 98,
                 fee: 450,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.doctorDetails);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.doctorDetails,
+                    arguments: {
+                      'doctorName': 'Dr. Jennifer Martinez',
+                      'qualification': 'MBBS, MD',
+                      'specialization': 'Pediatrician',
+                      'hospital': 'Children\'s Hospital',
+                      'experience': 7,
+                      'rating': 4.5,
+                      'reviewCount': 98,
+                      'fee': 450,
+                    },
+                  );
                 },
               ),
             ],
