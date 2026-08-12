@@ -137,6 +137,15 @@ class HealthMonitoringScreen extends StatelessWidget {
                 ),
                 const Divider(),
                 ListTile(
+                  leading: const Icon(Icons.assessment),
+                  title: const Text('Health Reports'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthReports);
+                  },
+                ),
+                const Divider(),
+                ListTile(
                   leading: const Icon(Icons.help_outline),
                   title: const Text('Help & Information'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),

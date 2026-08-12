@@ -76,4 +76,11 @@ class AppRoutes {
   static const String healthGoals = '/health-goals-monitoring';
   static const String healthHistory = '/health-history';
   static const String healthMonitoringHelp = '/health-monitoring-help';
+  static const String healthReports = '/health-reports';
+  static const String healthReportDetails = '/health-report-details';
+  static const String healthReportTypes = '/health-report-types';
+  static const String healthReportHistory = '/health-report-history';
+  static const String healthReportAnalytics = '/health-report-analytics';
+  static const String healthReportComparison = '/health-report-comparison';
+  static const String healthReportsHelp = '/health-reports-help';
 }

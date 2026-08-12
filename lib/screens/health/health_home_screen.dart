@@ -201,6 +201,38 @@ class HealthHomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, AppRoutes.healthReports);
+                  },
+                  child: Card(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.assessment, size: 40, color: AppColors.primaryBlue),
+                          const SizedBox(width: AppSpacing.md),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Health Reports', style: AppTextStyles.title),
+                                SizedBox(height: 4),
+                                Text('View your health reports and analytics'),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.primaryBlue),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: AppSpacing.xl),
             ],
           ),

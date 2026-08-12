@@ -75,6 +75,13 @@ import '../../screens/health_monitoring/health_activity_screen.dart';
 import '../../screens/health_monitoring/health_goals_screen.dart' as health_monitoring;
 import '../../screens/health_monitoring/health_history_screen.dart';
 import '../../screens/health_monitoring/health_monitoring_help_screen.dart';
+import '../../screens/health_reports/health_reports_screen.dart';
+import '../../screens/health_reports/health_report_details_screen.dart';
+import '../../screens/health_reports/health_report_types_screen.dart';
+import '../../screens/health_reports/health_report_history_screen.dart';
+import '../../screens/health_reports/health_report_analytics_screen.dart';
+import '../../screens/health_reports/health_report_comparison_screen.dart';
+import '../../screens/health_reports/health_reports_help_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -380,6 +387,34 @@ class AppRouter {
       case AppRoutes.healthMonitoringHelp:
         return MaterialPageRoute(
           builder: (_) => HealthMonitoringHelpScreen(),
+        );
+      case AppRoutes.healthReports:
+        return MaterialPageRoute(
+          builder: (_) => HealthReportsScreen(),
+        );
+      case AppRoutes.healthReportDetails:
+        return MaterialPageRoute(
+          builder: (_) => HealthReportDetailsScreen(),
+        );
+      case AppRoutes.healthReportTypes:
+        return MaterialPageRoute(
+          builder: (_) => const HealthReportTypesScreen(),
+        );
+      case AppRoutes.healthReportHistory:
+        return MaterialPageRoute(
+          builder: (_) => const HealthReportHistoryScreen(),
+        );
+      case AppRoutes.healthReportAnalytics:
+        return MaterialPageRoute(
+          builder: (_) => const HealthReportAnalyticsScreen(),
+        );
+      case AppRoutes.healthReportComparison:
+        return MaterialPageRoute(
+          builder: (_) => const HealthReportComparisonScreen(),
+        );
+      case AppRoutes.healthReportsHelp:
+        return MaterialPageRoute(
+          builder: (_) => const HealthReportsHelpScreen(),
         );
       default:
         return MaterialPageRoute(
