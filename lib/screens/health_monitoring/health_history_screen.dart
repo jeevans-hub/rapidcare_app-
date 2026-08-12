@@ -139,33 +139,59 @@ class _HealthHistoryScreenState extends State<HealthHistoryScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                ...filteredHistory.map((entry) => Card(
-                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Text(entry['date'], style: AppTextStyles.body),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Text(entry['metric'], style: AppTextStyles.body),
-                        ),
-                        Expanded(
-                          child: Text(entry['value'], style: AppTextStyles.subtitle),
-                        ),
-                        Expanded(
-                          child: Text(entry['unit'], style: AppTextStyles.caption),
-                        ),
-                        Expanded(
-                          child: Text('Demo', style: AppTextStyles.small.copyWith(color: AppColors.warningOrange)),
-                        ),
-                      ],
+                if (filteredHistory.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: AppColors.textSecondaryGrey,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'No sample records found',
+                            style: AppTextStyles.title,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Try another filter.',
+                            style: AppTextStyles.caption,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                )),
+                  )
+                else
+                  ...filteredHistory.map((entry) => Card(
+                    margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Text(entry['date'], style: AppTextStyles.body),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(entry['metric'], style: AppTextStyles.body),
+                          ),
+                          Expanded(
+                            child: Text(entry['value'], style: AppTextStyles.subtitle),
+                          ),
+                          Expanded(
+                            child: Text(entry['unit'], style: AppTextStyles.caption),
+                          ),
+                          Expanded(
+                            child: Text('Demo', style: AppTextStyles.small.copyWith(color: AppColors.warningOrange)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )),
                 const SizedBox(height: AppSpacing.xl),
               ],
             ),
