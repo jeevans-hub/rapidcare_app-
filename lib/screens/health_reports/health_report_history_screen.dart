@@ -127,7 +127,33 @@ class _HealthReportHistoryScreenState extends State<HealthReportHistoryScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                ...filteredHistory.map((entry) => Card(
+                if (filteredHistory.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.inbox_outlined,
+                            size: 64,
+                            color: AppColors.textSecondaryGrey,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'No demo reports available',
+                            style: AppTextStyles.subtitle,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Try selecting a different filter',
+                            style: AppTextStyles.caption,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  ...filteredHistory.map((entry) => Card(
                   margin: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: InkWell(
                     onTap: () {
