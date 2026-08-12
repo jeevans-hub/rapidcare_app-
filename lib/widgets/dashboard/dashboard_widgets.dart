@@ -1,7 +1,13 @@
 export 'dashboard_header.dart';
+export 'dashboard_welcome_card.dart';
 export 'search_bar_widget.dart';
 export 'quick_action_card.dart';
 export 'quick_actions_grid.dart';
+export 'dashboard_health_overview.dart';
+export 'dashboard_appointment_preview.dart';
+export 'dashboard_health_monitoring_preview.dart';
+export 'dashboard_health_reports_preview.dart';
+export 'dashboard_services_preview.dart';
 export 'appointment_card.dart';
 export 'health_stat_card.dart';
 export 'health_statistics_section.dart';

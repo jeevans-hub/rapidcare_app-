@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 
@@ -24,7 +25,7 @@ class DashboardHeader extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'John Doe',
+                  'Welcome to RapidCare',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -37,16 +38,16 @@ class DashboardHeader extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.notifications);
+            },
           ),
           const SizedBox(width: AppSpacing.sm),
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppColors.primaryBlue,
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-            ),
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.profile);
+            },
           ),
         ],
       ),
