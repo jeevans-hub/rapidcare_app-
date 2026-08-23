@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
+import '../../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _animationController.forward();
 
-    _navigateToLogin();
+    _checkAuthAndNavigate();
   }
 
   @override
@@ -37,10 +38,15 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  void _navigateToLogin() {
-    Future.delayed(const Duration(seconds: 2), () {
+  void _checkAuthAndNavigate() {
+    Future.delayed(const Duration(seconds: 2), () async {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        // Check if user is authenticated
+        if (AuthService.isAuthenticated) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
+        }
       }
     });
   }

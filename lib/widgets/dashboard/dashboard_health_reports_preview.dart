@@ -36,15 +36,22 @@ class DashboardHealthReportsPreview extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Health Reports',
-                      style: AppTextStyles.subtitle,
+                    Flexible(
+                      child: Text(
+                        'Health Reports',
+                        style: AppTextStyles.subtitle,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Latest: Weekly Health Summary',
-                      style: AppTextStyles.caption,
+                    Flexible(
+                      child: Text(
+                        'Latest: Weekly Health Summary',
+                        style: AppTextStyles.caption,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
