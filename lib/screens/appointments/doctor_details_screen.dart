@@ -7,23 +7,129 @@ import '../../widgets/primary_button.dart';
 import '../../widgets/section_title.dart';
 import '../../widgets/appointments/doctor_rating_widget.dart';
 import '../../widgets/doctors/doctor_widgets.dart';
+import '../../services/doctor_service.dart';
 
-class DoctorDetailsScreen extends StatelessWidget {
+class DoctorDetailsScreen extends StatefulWidget {
   const DoctorDetailsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic>? doctor =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+  State<DoctorDetailsScreen> createState() => _DoctorDetailsScreenState();
+}
 
-    final doctorName = doctor?['doctorName']?.toString() ?? 'Dr. Sarah Johnson';
-    final qualification = doctor?['qualification']?.toString() ?? 'MBBS, MD';
-    final specialization = doctor?['specialization']?.toString() ?? 'Cardiologist';
-    final hospital = doctor?['hospital']?.toString() ?? 'City General Hospital';
-    final experience = doctor?['experience']?.toString() ?? '12';
-    final rating = doctor?['rating']?.toString() ?? '4.8';
-    final reviewCount = doctor?['reviewCount']?.toString() ?? '234';
-    final fee = doctor?['fee']?.toString() ?? '600';
+class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
+  Map<String, dynamic>? doctor;
+  bool isLoading = true;
+  String? errorMessage;
+  String? doctorId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    doctorId = args?['doctorId']?.toString();
+    
+    // If we have doctorId but no data, fetch from API
+    if (doctorId != null && doctor == null) {
+      _loadDoctorDetails();
+    } else if (args != null && doctor == null) {
+      // Use passed data if available (fallback)
+      doctor = args;
+      isLoading = false;
+    }
+  }
+
+  Future<void> _loadDoctorDetails() async {
+    if (doctorId == null) return;
+
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    final result = await DoctorService.getDoctorById(doctorId!);
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+        if (result['success'] == true) {
+          doctor = result['data']['doctor'];
+        } else {
+          errorMessage = result['message'] ?? 'Failed to load doctor details';
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Doctor Details'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Doctor Details'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                ElevatedButton(
+                  onPressed: _loadDoctorDetails,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (doctor == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Doctor Details'),
+        ),
+        body: const Center(
+          child: Text('No doctor data available'),
+        ),
+      );
+    }
+
+    final doctorName = doctor?['name']?.toString() ?? 'Unknown';
+    final qualification = doctor?['qualification']?.toString() ?? '';
+    final specialization = doctor?['specialty']?.toString() ?? '';
+    final hospital = doctor?['hospital']?.toString() ?? '';
+    final location = doctor?['location']?.toString() ?? '';
+    final experience = doctor?['experienceYears']?.toString() ?? '0';
+    final rating = doctor?['rating']?.toString() ?? '0';
+    final reviewCount = doctor?['reviewCount']?.toString() ?? '0';
+    final fee = doctor?['consultationFee']?.toString() ?? '0';
+    final about = doctor?['about']?.toString() ?? '';
+    final languages = doctor?['languages'] as List<dynamic>? ?? [];
+    final availableSlots = doctor?['availableSlots'] as List<dynamic>? ?? [];
 
     return Scaffold(
       body: SafeArea(
@@ -89,28 +195,30 @@ class DoctorDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       DoctorRatingWidget(
-                        rating: double.tryParse(rating) ?? 4.8,
-                        reviewCount: int.tryParse(reviewCount) ?? 234,
+                        rating: double.tryParse(rating) ?? 0,
+                        reviewCount: int.tryParse(reviewCount) ?? 0,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       DoctorStatisticsCard(
-                        patientsServed: 5000,
-                        yearsExperience: int.tryParse(experience) ?? 12,
-                        rating: double.tryParse(rating) ?? 4.8,
-                        reviewsCount: int.tryParse(reviewCount) ?? 320,
+                        patientsServed: (int.tryParse(reviewCount) ?? 0) * 10,
+                        yearsExperience: int.tryParse(experience) ?? 0,
+                        rating: double.tryParse(rating) ?? 0,
+                        reviewsCount: int.tryParse(reviewCount) ?? 0,
                       ),
                       const SizedBox(height: AppSpacing.xl),
-                      const SectionTitle(title: 'About Doctor'),
-                      const SizedBox(height: AppSpacing.md),
-                      const Text(
-                        'Dr. Sarah Johnson is a highly experienced cardiologist with over 12 years of experience in treating heart conditions. She specializes in interventional cardiology and has successfully treated thousands of patients.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondaryGrey,
-                          height: 1.5,
+                      if (about.isNotEmpty) ...[
+                        const SectionTitle(title: 'About Doctor'),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          about,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondaryGrey,
+                            height: 1.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
                       const SectionTitle(title: 'Hospital'),
                       const SizedBox(height: AppSpacing.md),
                       Container(
@@ -132,13 +240,14 @@ class DoctorDetailsScreen extends StatelessWidget {
                                     hospital,
                                     style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                  const Text(
-                                    '123 Medical Center, New York',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondaryGrey,
+                                  if (location.isNotEmpty)
+                                    Text(
+                                      location,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondaryGrey,
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ),
@@ -146,76 +255,26 @@ class DoctorDetailsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xl),
-                      DoctorExperienceCard(
-                        experiences: [
-                          ExperienceItem(
-                            hospital: 'City General Hospital',
-                            role: 'Senior Cardiologist',
-                            duration: '2018 - Present',
-                          ),
-                          ExperienceItem(
-                            hospital: 'Metro Medical Center',
-                            role: 'Cardiologist',
-                            duration: '2014 - 2018',
-                          ),
-                          ExperienceItem(
-                            hospital: 'St. Mary\'s Hospital',
-                            role: 'Resident Cardiologist',
-                            duration: '2012 - 2014',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      DoctorAwardsCard(
-                        awards: [
-                          AwardItem(
-                            title: 'Best Cardiologist Award',
-                            year: '2023',
-                            description: 'Awarded for excellence in patient care',
-                          ),
-                          AwardItem(
-                            title: 'Medical Research Excellence',
-                            year: '2021',
-                            description: 'Recognized for contributions to cardiac research',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
+                      if (languages.isNotEmpty) ...[
+                        const SectionTitle(title: 'Languages'),
+                        const SizedBox(height: AppSpacing.md),
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: languages
+                              .map<Widget>((lang) => Chip(
+                                    label: Text(lang.toString()),
+                                    backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                                  ))
+                              .toList(),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
                       const SectionTitle(title: 'Available Timings'),
                       const SizedBox(height: AppSpacing.md),
-                      const DoctorAvailabilityCard(
-                        todaySlots: [
-                          '10:00 AM',
-                          '11:30 AM',
-                          '02:00 PM',
-                          '04:30 PM',
-                        ],
-                        tomorrowSlots: [
-                          '09:00 AM',
-                          '11:00 AM',
-                          '03:00 PM',
-                          '05:00 PM',
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      DoctorReviewsSection(
-                        reviews: [
-                          ReviewItem(
-                            patientName: 'John Smith',
-                            rating: 5.0,
-                            date: 'Aug 10, 2026',
-                            reviewText: 'Excellent doctor, very professional and caring.',
-                          ),
-                          ReviewItem(
-                            patientName: 'Emily Johnson',
-                            rating: 5.0,
-                            date: 'Aug 8, 2026',
-                            reviewText: 'Dr. Sarah explained everything clearly. Highly recommended!',
-                          ),
-                        ],
-                        onViewAll: () {
-                          Navigator.pushNamed(context, AppRoutes.doctorReviews);
-                        },
+                      DoctorAvailabilityCard(
+                        todaySlots: availableSlots.take(4).cast<String>().toList(),
+                        tomorrowSlots: availableSlots.skip(4).take(4).cast<String>().toList(),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       Row(
@@ -243,7 +302,18 @@ class DoctorDetailsScreen extends StatelessWidget {
                       PrimaryButton(
                         text: 'Book Appointment',
                         onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.bookAppointment);
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.bookAppointment,
+                            arguments: {
+                              'doctorId': doctorId,
+                              'doctorName': doctorName,
+                              'specialization': specialization,
+                              'hospital': hospital,
+                              'fee': fee,
+                              'availableSlots': availableSlots,
+                            },
+                          );
                         },
                       ),
                       const SizedBox(height: AppSpacing.xl),

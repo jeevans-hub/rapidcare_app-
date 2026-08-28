@@ -2,30 +2,55 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_spacing.dart';
 import 'doctor_speciality_chip.dart';
 
-class SpecialityFilterSection extends StatelessWidget {
-  const SpecialityFilterSection({super.key});
+class SpecialityFilterSection extends StatefulWidget {
+  final ValueChanged<String>? onSpecialtySelected;
+
+  const SpecialityFilterSection({super.key, this.onSpecialtySelected});
+
+  @override
+  State<SpecialityFilterSection> createState() => _SpecialityFilterSectionState();
+}
+
+class _SpecialityFilterSectionState extends State<SpecialityFilterSection> {
+  String selectedSpecialty = 'All';
+
+  final List<String> specialties = [
+    'All',
+    'General Medicine',
+    'Cardiology',
+    'Dermatology',
+    'Orthopedics',
+    'Neurology',
+    'Pediatrics',
+    'ENT',
+    'Gynecology',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 40,
-      child: ListView(
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        children: const [
-          DoctorSpecialityChip(label: 'All', isSelected: true),
-          SizedBox(width: AppSpacing.sm),
-          DoctorSpecialityChip(label: 'Cardiologist'),
-          SizedBox(width: AppSpacing.sm),
-          DoctorSpecialityChip(label: 'Dermatologist'),
-          SizedBox(width: AppSpacing.sm),
-          DoctorSpecialityChip(label: 'Orthopedic'),
-          SizedBox(width: AppSpacing.sm),
-          DoctorSpecialityChip(label: 'Neurologist'),
-          SizedBox(width: AppSpacing.sm),
-          DoctorSpecialityChip(label: 'Pediatrician'),
-          SizedBox(width: AppSpacing.sm),
-          DoctorSpecialityChip(label: 'General'),
-        ],
+        itemCount: specialties.length,
+        itemBuilder: (context, index) {
+          final specialty = specialties[index];
+          return Padding(
+            padding: EdgeInsets.only(
+              right: index < specialties.length - 1 ? AppSpacing.sm : 0,
+            ),
+            child: DoctorSpecialityChip(
+              label: specialty,
+              isSelected: selectedSpecialty == specialty,
+              onTap: () {
+                setState(() {
+                  selectedSpecialty = specialty;
+                });
+                widget.onSpecialtySelected?.call(specialty);
+              },
+            ),
+          );
+        },
       ),
     );
   }

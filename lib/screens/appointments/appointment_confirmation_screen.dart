@@ -10,6 +10,16 @@ class AppointmentConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final appointment = args?['appointment'];
+    final doctor = args?['doctor'];
+
+    final doctorName = doctor?['doctorName'] ?? appointment?['doctor']?['name'] ?? 'Doctor';
+    final hospital = doctor?['hospital'] ?? appointment?['doctor']?['hospital'] ?? '';
+    final appointmentDate = appointment?['appointmentDate'];
+    final timeSlot = appointment?['timeSlot'] ?? '';
+    final appointmentId = appointment?['_id']?.toString() ?? '';
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -63,48 +73,54 @@ class AppointmentConfirmationScreen extends StatelessWidget {
                     _ConfirmationRow(
                       icon: Icons.person,
                       label: 'Doctor',
-                      value: 'Dr. Sarah Johnson',
+                      value: doctorName,
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    _ConfirmationRow(
-                      icon: Icons.local_hospital,
-                      label: 'Hospital',
-                      value: 'City General Hospital',
-                    ),
+                    if (hospital.isNotEmpty)
+                      _ConfirmationRow(
+                        icon: Icons.local_hospital,
+                        label: 'Hospital',
+                        value: hospital,
+                      ),
                     const SizedBox(height: AppSpacing.md),
-                    _ConfirmationRow(
-                      icon: Icons.calendar_today,
-                      label: 'Date',
-                      value: 'Mon, 15 Jan 2026',
-                    ),
+                    if (appointmentDate != null)
+                      _ConfirmationRow(
+                        icon: Icons.calendar_today,
+                        label: 'Date',
+                        value: _formatDate(appointmentDate),
+                      ),
                     const SizedBox(height: AppSpacing.md),
-                    _ConfirmationRow(
-                      icon: Icons.access_time,
-                      label: 'Time',
-                      value: '09:00 AM',
-                    ),
+                    if (timeSlot.isNotEmpty)
+                      _ConfirmationRow(
+                        icon: Icons.access_time,
+                        label: 'Time',
+                        value: timeSlot,
+                      ),
                     const SizedBox(height: AppSpacing.md),
                     _ConfirmationRow(
                       icon: Icons.video_call,
                       label: 'Consultation',
-                      value: 'Video Consultation',
+                      value: 'In-Person Visit',
                     ),
                     const SizedBox(height: AppSpacing.md),
                     const Divider(),
                     const SizedBox(height: AppSpacing.md),
-                    _ConfirmationRow(
-                      icon: Icons.confirmation_number,
-                      label: 'Appointment ID',
-                      value: 'APT-2026-001',
-                      isBold: true,
-                    ),
+                    if (appointmentId.isNotEmpty)
+                      _ConfirmationRow(
+                        icon: Icons.confirmation_number,
+                        label: 'Appointment ID',
+                        value: appointmentId.substring(0, 8),
+                        isBold: true,
+                      ),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(
-                text: 'Download Receipt',
-                onPressed: () {},
+                text: 'View My Appointments',
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, AppRoutes.appointmentScreen);
+                },
               ),
               const SizedBox(height: AppSpacing.sm),
               OutlinedButton(
@@ -119,6 +135,16 @@ class AppointmentConfirmationScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDate(dynamic date) {
+    if (date == null) return '';
+    try {
+      final dateTime = DateTime.parse(date.toString());
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    } catch (e) {
+      return date.toString();
+    }
   }
 }
 

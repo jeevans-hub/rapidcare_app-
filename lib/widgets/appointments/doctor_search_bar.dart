@@ -4,7 +4,9 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_radius.dart';
 
 class DoctorSearchBar extends StatelessWidget {
-  const DoctorSearchBar({super.key});
+  final ValueChanged<String>? onChanged;
+
+  const DoctorSearchBar({super.key, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +17,7 @@ class DoctorSearchBar extends StatelessWidget {
         border: Border.all(color: AppColors.backgroundLightGreyDark),
       ),
       child: TextField(
+        onChanged: onChanged,
         decoration: InputDecoration(
           hintText: 'Search doctors by name or specialization',
           hintStyle: const TextStyle(
