@@ -42,6 +42,7 @@ class AppRoutes {
   static const String about = '/about';
   static const String medicalRecords = '/medical-records';
   static const String medicalRecordDetails = '/medical-record-details';
+  static const String addMedicalRecord = '/add-medical-record';
   static const String prescriptionRecords = '/prescription-records';
   static const String labReports = '/lab-reports';
   static const String doctorReports = '/doctor-reports';

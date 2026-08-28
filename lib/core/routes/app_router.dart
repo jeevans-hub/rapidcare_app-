@@ -33,6 +33,7 @@ import '../../screens/settings/help_support_screen.dart';
 import '../../screens/settings/about_screen.dart';
 import '../../screens/medical_records/medical_records_screen.dart';
 import '../../screens/medical_records/medical_record_details_screen.dart';
+import '../../screens/medical_records/add_medical_record_screen.dart';
 import '../../screens/medical_records/prescription_records_screen.dart';
 import '../../screens/medical_records/lab_reports_screen.dart';
 import '../../screens/medical_records/doctor_reports_screen.dart';
@@ -247,6 +248,10 @@ class AppRouter {
       case AppRoutes.medicalRecordDetails:
         return MaterialPageRoute(
           builder: (_) => const MedicalRecordDetailsScreen(),
+        );
+      case AppRoutes.addMedicalRecord:
+        return MaterialPageRoute(
+          builder: (_) => const AddMedicalRecordScreen(),
         );
       case AppRoutes.prescriptionRecords:
         return MaterialPageRoute(

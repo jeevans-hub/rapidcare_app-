@@ -3,25 +3,262 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../widgets/primary_button.dart';
+import '../../models/medical_record_model.dart';
+import '../../services/medical_record_service.dart';
 import '../../widgets/section_title.dart';
 
-class MedicalRecordDetailsScreen extends StatelessWidget {
+class MedicalRecordDetailsScreen extends StatefulWidget {
   const MedicalRecordDetailsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic>? record =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+  State<MedicalRecordDetailsScreen> createState() => _MedicalRecordDetailsScreenState();
+}
 
-    final title = record?['title']?.toString() ?? 'Blood Test';
-    final hospital = record?['hospital']?.toString() ?? 'City Care Hospital';
-    final date = record?['date']?.toString() ?? '10 Aug 2026';
-    final type = record?['type']?.toString() ?? 'Lab Report';
+class _MedicalRecordDetailsScreenState extends State<MedicalRecordDetailsScreen> {
+  MedicalRecord? _record;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadRecord();
+  }
+
+  Future<void> _loadRecord() async {
+    final Map<String, dynamic>? arguments =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final recordId = arguments?['recordId']?.toString();
+
+    if (recordId == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Record ID not provided';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await MedicalRecordService.getMedicalRecordById(recordId);
+
+      setState(() {
+        _isLoading = false;
+        if (result['success'] == true) {
+          final recordData = result['data']['medicalRecord'];
+          _record = MedicalRecord.fromJson(recordData);
+        } else {
+          _errorMessage = result['message'] ?? 'Failed to load record';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Unable to connect to the server';
+      });
+    }
+  }
+
+  IconData _getIconForRecordType(String recordType) {
+    switch (recordType) {
+      case 'consultation':
+        return Icons.local_hospital;
+      case 'lab_report':
+        return Icons.biotech;
+      case 'prescription':
+        return Icons.medication;
+      case 'vaccination':
+        return Icons.vaccines;
+      case 'surgery':
+        return Icons.medical_services;
+      case 'allergy':
+        return Icons.warning;
+      default:
+        return Icons.description;
+    }
+  }
+
+  Future<void> _archiveRecord() async {
+    if (_record == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Archive Record'),
+        content: const Text('Are you sure you want to archive this medical record?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Archive'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final result = await MedicalRecordService.archiveMedicalRecord(_record!.id);
+
+      if (result['success'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Record archived successfully'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to archive record'),
+              backgroundColor: AppColors.errorRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to connect to the server'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteRecord() async {
+    if (_record == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Record'),
+        content: const Text('Are you sure you want to delete this medical record?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorRed),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final result = await MedicalRecordService.deleteMedicalRecord(_record!.id);
+
+      if (result['success'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Record deleted successfully'),
+              backgroundColor: AppColors.successGreen,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to delete record'),
+              backgroundColor: AppColors.errorRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to connect to the server'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Medical Record'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_errorMessage != null || _record == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Medical Record'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: AppColors.errorRed),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  _errorMessage ?? 'Record not found',
+                  style: AppTextStyles.body,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final record = _record!;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Medical Record'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.archive),
+            onPressed: _archiveRecord,
+            tooltip: 'Archive',
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: _deleteRecord,
+            tooltip: 'Delete',
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -37,8 +274,8 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
                     color: AppColors.primaryBlue.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.biotech,
+                  child: Icon(
+                    _getIconForRecordType(record.recordType),
                     size: 50,
                     color: AppColors.primaryBlue,
                   ),
@@ -48,7 +285,7 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  title,
+                  record.title,
                   style: AppTextStyles.headline,
                   textAlign: TextAlign.center,
                 ),
@@ -57,7 +294,7 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  hospital,
+                  record.hospitalName ?? record.doctorName ?? 'Unknown',
                   style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
@@ -66,7 +303,7 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  date,
+                  record.getFormattedDate(),
                   style: AppTextStyles.caption,
                   textAlign: TextAlign.center,
                 ),
@@ -83,103 +320,128 @@ class MedicalRecordDetailsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.small),
                   ),
                   child: Text(
-                    type,
+                    record.getDisplayType(),
                     style: AppTextStyles.caption,
                   ),
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: SectionTitle(title: 'Record Summary'),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: _DetailRow(label: 'Diagnosis', value: 'Routine health examination'),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: _DetailRow(label: 'Notes', value: 'Patient advised to maintain a healthy lifestyle.'),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: _DetailRow(label: 'Doctor', value: 'Dr. Sarah Johnson'),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: _DetailRow(label: 'Department', value: 'Pathology'),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: SectionTitle(title: 'Details'),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceWhite,
-                    borderRadius: BorderRadius.circular(AppRadius.medium),
-                    border: Border.all(color: AppColors.backgroundLightGreyDark),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Test Results',
-                        style: AppTextStyles.body,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _ResultItem(name: 'Hemoglobin', value: '13.5 g/dL', status: 'Normal'),
-                      _ResultItem(name: 'WBC Count', value: '7,500 /mm³', status: 'Normal'),
-                      _ResultItem(name: 'Platelet Count', value: '250,000 /mm³', status: 'Normal'),
-                      _ResultItem(name: 'Blood Sugar', value: '95 mg/dL', status: 'Normal'),
-                    ],
+              if (record.doctorName != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: _DetailRow(label: 'Doctor', value: record.doctorName!),
+                ),
+              if (record.doctorName != null) const SizedBox(height: AppSpacing.sm),
+              if (record.hospitalName != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: _DetailRow(label: 'Hospital', value: record.hospitalName!),
+                ),
+              if (record.hospitalName != null) const SizedBox(height: AppSpacing.sm),
+              if (record.description != null && record.description!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.lg),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: SectionTitle(title: 'Description'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Text(
+                    record.description!,
+                    style: AppTextStyles.body,
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PrimaryButton(
-                        text: 'View Report',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Report preview is not available in demo mode.'),
-                              backgroundColor: AppColors.warningOrange,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: PrimaryButton(
-                        text: 'Download Report',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Report preview is not available in demo mode.'),
-                              backgroundColor: AppColors.warningOrange,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+              ],
+              if (record.diagnosisText != null && record.diagnosisText!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xl),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: SectionTitle(title: 'Diagnosis'),
                 ),
-              ),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.warningOrange.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(AppRadius.medium),
+                      border: Border.all(color: AppColors.warningOrange.withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          record.diagnosisText!,
+                          style: AppTextStyles.body,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'This information is stored for reference only. Consult a qualified medical professional for medical advice.',
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textSecondaryGrey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              if (record.prescriptionText != null && record.prescriptionText!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xl),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: SectionTitle(title: 'Prescription'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryTeal.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(AppRadius.medium),
+                      border: Border.all(color: AppColors.secondaryTeal.withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          record.prescriptionText!,
+                          style: AppTextStyles.body,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'This information is stored for reference only. Consult a qualified medical professional for medical advice.',
+                          style: AppTextStyles.small.copyWith(
+                            color: AppColors.textSecondaryGrey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              if (record.notes != null && record.notes!.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.xl),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: SectionTitle(title: 'Notes'),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Text(
+                    record.notes!,
+                    style: AppTextStyles.body,
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
             ],
           ),
@@ -216,62 +478,6 @@ class _DetailRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ResultItem extends StatelessWidget {
-  final String name;
-  final String value;
-  final String status;
-
-  const _ResultItem({
-    required this.name,
-    required this.value,
-    required this.status,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              name,
-              style: AppTextStyles.body,
-            ),
-          ),
-          Text(
-            value,
-            style: AppTextStyles.body.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: 2,
-            ),
-            decoration: BoxDecoration(
-              color: status == 'Normal'
-                  ? AppColors.successGreen.withValues(alpha: 0.1)
-                  : AppColors.errorRed.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.small),
-            ),
-            child: Text(
-              status,
-              style: AppTextStyles.small.copyWith(
-                color: status == 'Normal'
-                    ? AppColors.successGreen
-                    : AppColors.errorRed,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

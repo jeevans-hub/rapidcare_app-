@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../widgets/custom_textfield.dart';
+import '../../models/medical_record_model.dart';
+import '../../services/medical_record_service.dart';
 import '../../widgets/medical_records/medical_records_widgets.dart';
 
 class MedicalRecordsScreen extends StatefulWidget {
@@ -14,59 +15,91 @@ class MedicalRecordsScreen extends StatefulWidget {
 
 class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
   String _selectedFilter = 'All';
+  List<MedicalRecord> _allRecords = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<MedicalRecordItem> _allRecords = [
-    MedicalRecordItem(
-      icon: Icons.biotech,
-      title: 'Blood Test',
-      doctorOrHospital: 'City Care Hospital',
-      date: '10 Aug 2026',
-      type: 'Lab Report',
-    ),
-    MedicalRecordItem(
-      icon: Icons.local_hospital,
-      title: 'General Consultation',
-      doctorOrHospital: 'Dr. Sarah Johnson',
-      date: '05 Aug 2026',
-      type: 'Doctor Report',
-    ),
-    MedicalRecordItem(
-      icon: Icons.medication,
-      title: 'Prescription',
-      doctorOrHospital: 'Dr. Michael Lee',
-      date: '02 Aug 2026',
-      type: 'Prescription',
-    ),
-    MedicalRecordItem(
-      icon: Icons.biotech,
-      title: 'Complete Blood Count',
-      doctorOrHospital: 'City Care Hospital',
-      date: '28 Jul 2026',
-      type: 'Lab Report',
-    ),
-    MedicalRecordItem(
-      icon: Icons.local_hospital,
-      title: 'Cardiac Checkup',
-      doctorOrHospital: 'Dr. Emily Davis',
-      date: '20 Jul 2026',
-      type: 'Doctor Report',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadMedicalRecords();
+  }
 
-  List<MedicalRecordItem> get _filteredRecords {
+  Future<void> _loadMedicalRecords() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      String? recordTypeFilter;
+      if (_selectedFilter == 'Prescriptions') {
+        recordTypeFilter = 'prescription';
+      } else if (_selectedFilter == 'Lab Reports') {
+        recordTypeFilter = 'lab_report';
+      } else if (_selectedFilter == 'Doctor Reports') {
+        recordTypeFilter = 'consultation';
+      }
+
+      final result = await MedicalRecordService.getMedicalRecords(
+        recordType: recordTypeFilter,
+        status: 'active',
+      );
+
+      setState(() {
+        _isLoading = false;
+        if (result['success'] == true) {
+          final List<dynamic> recordsData = result['data']['medicalRecords'] ?? [];
+          _allRecords = recordsData
+              .map((json) => MedicalRecord.fromJson(json))
+              .toList();
+        } else {
+          _errorMessage = result['message'] ?? 'Failed to load records';
+          _allRecords = [];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Unable to connect to the server';
+        _allRecords = [];
+      });
+    }
+  }
+
+  List<MedicalRecord> get _filteredRecords {
     if (_selectedFilter == 'All') return _allRecords;
     return _allRecords.where((record) {
       switch (_selectedFilter) {
         case 'Prescriptions':
-          return record.type == 'Prescription';
+          return record.recordType == 'prescription';
         case 'Lab Reports':
-          return record.type == 'Lab Report';
+          return record.recordType == 'lab_report';
         case 'Doctor Reports':
-          return record.type == 'Doctor Report';
+          return record.recordType == 'consultation';
         default:
           return true;
       }
     }).toList();
+  }
+
+  IconData _getIconForRecordType(String recordType) {
+    switch (recordType) {
+      case 'consultation':
+        return Icons.local_hospital;
+      case 'lab_report':
+        return Icons.biotech;
+      case 'prescription':
+        return Icons.medication;
+      case 'vaccination':
+        return Icons.vaccines;
+      case 'surgery':
+        return Icons.medical_services;
+      case 'allergy':
+        return Icons.warning;
+      default:
+        return Icons.description;
+    }
   }
 
   @override
@@ -103,7 +136,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                       child: MedicalRecordSummaryCard(
                         icon: Icons.medication,
                         label: 'Prescriptions',
-                        count: 2,
+                        count: _allRecords.where((r) => r.recordType == 'prescription').length,
                         color: AppColors.secondaryTeal,
                       ),
                     ),
@@ -119,7 +152,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                       child: MedicalRecordSummaryCard(
                         icon: Icons.biotech,
                         label: 'Lab Reports',
-                        count: 2,
+                        count: _allRecords.where((r) => r.recordType == 'lab_report').length,
                         color: AppColors.warningOrange,
                       ),
                     ),
@@ -128,7 +161,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                       child: MedicalRecordSummaryCard(
                         icon: Icons.local_hospital,
                         label: 'Doctor Reports',
-                        count: 2,
+                        count: _allRecords.where((r) => r.recordType == 'consultation').length,
                         color: AppColors.primaryBlue,
                       ),
                     ),
@@ -168,24 +201,44 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: CustomTextField(
-                  hint: 'Search medical records...',
-                  prefixIcon: Icons.search,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
               MedicalRecordsFilter(
                 selectedFilter: _selectedFilter,
                 onFilterChanged: (filter) {
                   setState(() {
                     _selectedFilter = filter;
                   });
+                  _loadMedicalRecords();
                 },
               ),
               const SizedBox(height: AppSpacing.lg),
-              if (_filteredRecords.isEmpty)
+              if (_isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(AppSpacing.xl),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    children: [
+                      Icon(Icons.error_outline, size: 48, color: AppColors.errorRed),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      ElevatedButton(
+                        onPressed: _loadMedicalRecords,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              else if (_filteredRecords.isEmpty)
                 const MedicalRecordEmptyState()
               else
                 ListView.builder(
@@ -198,20 +251,17 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: MedicalRecordCard(
-                        icon: record.icon,
+                        icon: _getIconForRecordType(record.recordType),
                         title: record.title,
-                        doctorOrHospital: record.doctorOrHospital,
-                        date: record.date,
-                        type: record.type,
+                        doctorOrHospital: record.doctorName ?? record.hospitalName ?? 'Unknown',
+                        date: record.getFormattedDate(),
+                        type: record.getDisplayType(),
                         onTap: () {
                           Navigator.pushNamed(
                             context,
                             AppRoutes.medicalRecordDetails,
                             arguments: {
-                              'title': record.title,
-                              'hospital': record.doctorOrHospital,
-                              'date': record.date,
-                              'type': record.type,
+                              'recordId': record.id,
                             },
                           );
                         },
@@ -223,6 +273,18 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.pushNamed(
+            context,
+            AppRoutes.addMedicalRecord,
+          );
+          if (result == true) {
+            _loadMedicalRecords();
+          }
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
