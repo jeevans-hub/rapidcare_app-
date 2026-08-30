@@ -29,6 +29,8 @@ class AppRoutes {
   static const String pharmacyCart = '/pharmacy-cart';
   static const String prescription = '/prescription';
   static const String pharmacyOrderConfirmation = '/pharmacy-order-confirmation';
+  static const String orderHistory = '/order-history';
+  static const String orderDetails = '/order-details';
   static const String editProfile = '/edit-profile';
   static const String medicalInformation = '/medical-information';
   static const String notificationSettings = '/notification-settings';

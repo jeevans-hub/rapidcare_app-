@@ -4,10 +4,64 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../models/order_model.dart';
+import '../../services/order_service.dart';
 import '../../widgets/primary_button.dart';
 
-class PharmacyOrderConfirmationScreen extends StatelessWidget {
+class PharmacyOrderConfirmationScreen extends StatefulWidget {
   const PharmacyOrderConfirmationScreen({super.key});
+
+  @override
+  State<PharmacyOrderConfirmationScreen> createState() => _PharmacyOrderConfirmationScreenState();
+}
+
+class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmationScreen> {
+  Order? _order;
+  bool _isLoading = true;
+  String? _errorMessage;
+  bool _isPlacingOrder = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && _order == null && !_isPlacingOrder) {
+      _placeOrder();
+    }
+  }
+
+  Future<void> _placeOrder() async {
+    setState(() {
+      _isPlacingOrder = true;
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await OrderService.placeOrder();
+      
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>;
+        setState(() {
+          _order = Order.fromJson(data['order'] as Map<String, dynamic>);
+          _isLoading = false;
+          _isPlacingOrder = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Failed to place order';
+          _isLoading = false;
+          _isPlacingOrder = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Unable to connect to the server';
+        _isLoading = false;
+        _isPlacingOrder = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,180 +70,246 @@ class PharmacyOrderConfirmationScreen extends StatelessWidget {
         title: const Text('Order Confirmation'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
+        child: _buildBody(),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: AppSpacing.md),
+            Text('Placing your order...'),
+          ],
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                _errorMessage!,
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ElevatedButton(
+                onPressed: _placeOrder,
+                child: const Text('Retry'),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Back to Cart'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_order == null) {
+      return const Center(
+        child: Text('Order not found'),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          Center(
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.successGreen.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle,
+                size: 80,
+                color: AppColors.successGreen,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          const Center(
+            child: Text(
+              'Order Placed Successfully!',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.successGreen,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const Center(
+            child: Text(
+              'Your order has been placed successfully',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondaryGrey,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          _OrderDetailCard(order: _order!),
+          const SizedBox(height: AppSpacing.xl),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Row(
               children: [
-                const SizedBox(height: AppSpacing.xl),
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: AppColors.successGreenLight,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    size: 64,
-                    color: AppColors.successGreen,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  'Order Confirmed',
-                  style: AppTextStyles.headline.copyWith(
-                    color: AppColors.successGreen,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Your medicine order has been placed successfully.',
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.textSecondaryGrey,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.large),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _OrderDetailRow(
-                          label: 'Order ID',
-                          value: '#RXD123456',
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _OrderDetailRow(
-                          label: 'Estimated Delivery',
-                          value: 'Aug 15, 2026',
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _OrderDetailRow(
-                          label: 'Delivery Address',
-                          value: '123 Main St, City',
-                        ),
-                        const Divider(height: AppSpacing.lg),
-                        const Text(
-                          'Ordered Medicines',
-                          style: AppTextStyles.title,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _MedicineItem(name: 'Paracetamol 500mg', qty: 'x2'),
-                        _MedicineItem(name: 'Vitamin C 1000mg', qty: 'x1'),
-                        const Divider(height: AppSpacing.lg),
-                        _OrderDetailRow(
-                          label: 'Total Amount',
-                          value: '\$27.96',
-                          valueStyle: AppTextStyles.title.copyWith(
-                            color: AppColors.primaryBlue,
-                          ),
-                        ),
-                      ],
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.orderDetails,
+                        arguments: {'orderId': _order!.id},
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.medium),
+                      ),
                     ),
+                    child: const Text('View Order Details'),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                PrimaryButton(
-                  text: 'Track Order',
-                  onPressed: () {
-                    Navigator.popUntil(
-                      context,
-                      ModalRoute.withName(AppRoutes.home),
-                    );
-                  },
-                ),
-                const SizedBox(height: AppSpacing.md),
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.popUntil(
-                      context,
-                      ModalRoute.withName(AppRoutes.home),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.medium),
-                    ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: PrimaryButton(
+                    text: 'Back to Home',
+                    onPressed: () {
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
                   ),
-                  child: const Text('Back to Home'),
                 ),
-                const SizedBox(height: AppSpacing.xl),
               ],
             ),
           ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderDetailCard extends StatelessWidget {
+  final Order order;
+
+  const _OrderDetailCard({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.large),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DetailRow(label: 'Order ID', value: '#${order.id.substring(0, 8).toUpperCase()}'),
+            const SizedBox(height: AppSpacing.sm),
+            _DetailRow(label: 'Estimated Delivery', value: '2-3 business days'),
+            if (order.deliveryAddress != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              _DetailRow(label: 'Delivery Address', value: order.deliveryAddress!),
+            ],
+            const SizedBox(height: AppSpacing.md),
+            const Divider(),
+            const SizedBox(height: AppSpacing.md),
+            const Text(
+              'Ordered Items:',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ...order.items.map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: Text(
+                    '${item.nameSnapshot} x ${item.quantity}',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                )),
+            const SizedBox(height: AppSpacing.md),
+            const Divider(),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Total Amount',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '\$${order.totalAmount.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _OrderDetailRow extends StatelessWidget {
+class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
-  final TextStyle? valueStyle;
 
-  const _OrderDetailRow({
-    required this.label,
-    required this.value,
-    this.valueStyle,
-  });
+  const _DetailRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: AppTextStyles.body.copyWith(
+          style: const TextStyle(
+            fontSize: 12,
             color: AppColors.textSecondaryGrey,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           value,
-          style: valueStyle ?? AppTextStyles.body,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
-    );
-  }
-}
-
-class _MedicineItem extends StatelessWidget {
-  final String name;
-  final String qty;
-
-  const _MedicineItem({
-    required this.name,
-    required this.qty,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            name,
-            style: AppTextStyles.body,
-          ),
-          Text(
-            qty,
-            style: AppTextStyles.body.copyWith(
-              color: AppColors.textSecondaryGrey,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

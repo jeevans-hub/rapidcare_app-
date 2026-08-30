@@ -10,6 +10,9 @@ const userRoutes = require('./routes/user.routes');
 const doctorRoutes = require('./routes/doctor.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const medicalRecordRoutes = require('./routes/medicalRecord.routes');
+const medicineRoutes = require('./routes/medicine.routes');
+const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
 
 const app = express();
 
@@ -25,6 +28,9 @@ app.use(`${config.apiPrefix}/users`, userRoutes);
 app.use(`${config.apiPrefix}/doctors`, doctorRoutes);
 app.use(`${config.apiPrefix}/appointments`, appointmentRoutes);
 app.use(`${config.apiPrefix}/medical-records`, medicalRecordRoutes);
+app.use(`${config.apiPrefix}/medicines`, medicineRoutes);
+app.use(`${config.apiPrefix}/cart`, cartRoutes);
+app.use(`${config.apiPrefix}/orders`, orderRoutes);
 
 // 404 handler
 app.use(notFound);

@@ -1,11 +1,15 @@
 const app = require('./app');
 const config = require('./config/env');
 const { connectDatabase, disconnectDatabase } = require('./config/database');
+const seedMedicines = require('./seed/medicineSeed');
 
 const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDatabase();
+
+    // Seed medicines (idempotent - only if none exist)
+    await seedMedicines();
 
     // Start Express server
     const server = app.listen(config.port, () => {

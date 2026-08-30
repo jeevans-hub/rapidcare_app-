@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_text_styles.dart';
+import '../../models/cart_model.dart';
+import '../../services/cart_service.dart';
 import '../../widgets/pharmacy/pharmacy_widgets.dart';
 
 class PharmacyCartScreen extends StatefulWidget {
@@ -11,40 +15,116 @@ class PharmacyCartScreen extends StatefulWidget {
 }
 
 class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
-  final List<Map<String, dynamic>> _cartItems = [
-    {
-      'name': 'Paracetamol 500mg',
-      'price': 5.99,
-      'quantity': 2,
-    },
-    {
-      'name': 'Vitamin C 1000mg',
-      'price': 12.99,
-      'quantity': 1,
-    },
-  ];
+  Cart? _cart;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  double get _subtotal {
-    return _cartItems.fold(
-      0,
-      (sum, item) => sum + (item['price'] as double) * (item['quantity'] as int),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _fetchCart();
   }
 
-  double get _deliveryFee => 2.99;
-  double get _discount => 0.0;
-  double get _total => _subtotal + _deliveryFee - _discount;
-
-  void _updateQuantity(int index, int quantity) {
+  Future<void> _fetchCart() async {
     setState(() {
-      _cartItems[index]['quantity'] = quantity;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final result = await CartService.getCart();
+      
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>;
+        setState(() {
+          _cart = Cart.fromJson(data['cart'] as Map<String, dynamic>);
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Failed to fetch cart';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Unable to connect to the server';
+        _isLoading = false;
+      });
+    }
   }
 
-  void _removeItem(int index) {
-    setState(() {
-      _cartItems.removeAt(index);
-    });
+  Future<void> _updateQuantity(String medicineId, int quantity) async {
+    try {
+      final result = await CartService.updateCartItem(
+        medicineId: medicineId,
+        quantity: quantity,
+      );
+      
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>;
+        setState(() {
+          _cart = Cart.fromJson(data['cart'] as Map<String, dynamic>);
+        });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to update quantity'),
+              backgroundColor: AppColors.errorRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to connect to the server'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeItem(String medicineId) async {
+    try {
+      final result = await CartService.removeFromCart(medicineId);
+      
+      if (result['success'] == true) {
+        final data = result['data'] as Map<String, dynamic>;
+        setState(() {
+          _cart = Cart.fromJson(data['cart'] as Map<String, dynamic>);
+        });
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to remove item'),
+              backgroundColor: AppColors.errorRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to connect to the server'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  void _proceedToCheckout() {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.pharmacyOrderConfirmation,
+      arguments: {'cart': _cart},
+    ).then((_) => _fetchCart());
   }
 
   @override
@@ -54,64 +134,113 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
         title: const Text('Your Cart'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: _buildBody(),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
               const SizedBox(height: AppSpacing.md),
-              if (_cartItems.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.xl),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(Icons.shopping_cart_outlined, size: 64),
-                        SizedBox(height: AppSpacing.md),
-                        Text('Your cart is empty'),
-                      ],
-                    ),
-                  ),
-                )
-              else ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  child: Column(
-                    children: List.generate(_cartItems.length, (index) {
-                      final item = _cartItems[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: MedicineCartItem(
-                          name: item['name'] as String,
-                          price: item['price'] as double,
-                          quantity: item['quantity'] as int,
-                          onQuantityChanged: (quantity) {
-                            _updateQuantity(index, quantity);
-                          },
-                          onRemove: () {
-                            _removeItem(index);
-                          },
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  child: PharmacyCartSummary(
-                    subtotal: _subtotal,
-                    deliveryFee: _deliveryFee,
-                    discount: _discount,
-                    total: _total,
-                    onProceedToCheckout: () {
-                      Navigator.pushNamed(context, AppRoutes.prescription);
-                    },
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
+              Text(
+                _errorMessage!,
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              ElevatedButton(
+                onPressed: _fetchCart,
+                child: const Text('Retry'),
+              ),
             ],
           ),
+        ),
+      );
+    }
+
+    if (_cart == null || _cart!.items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.textSecondaryGrey),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Your cart is empty',
+                style: AppTextStyles.body,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Add medicines to get started',
+                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _fetchCart,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSpacing.md),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: Column(
+                children: List.generate(_cart!.items.length, (index) {
+                  final item = _cart!.items[index];
+                  return Padding(
+ padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: MedicineCartItem(
+                      name: item.medicineName,
+                      price: item.priceAtAdd,
+                      quantity: item.quantity,
+                      onQuantityChanged: (quantity) {
+                        if (quantity == 0) {
+                          _removeItem(item.medicineId);
+                        } else {
+                          _updateQuantity(item.medicineId, quantity);
+                        }
+                      },
+                      onRemove: () {
+                        _removeItem(item.medicineId);
+                      },
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              child: PharmacyCartSummary(
+                subtotal: _cart!.subtotal,
+                deliveryFee: _cart!.deliveryFee,
+                discount: 0.0,
+                total: _cart!.total,
+                onProceedToCheckout: _proceedToCheckout,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
         ),
       ),
     );

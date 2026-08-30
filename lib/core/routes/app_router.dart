@@ -23,6 +23,8 @@ import '../../screens/pharmacy/medicine_details_screen.dart';
 import '../../screens/pharmacy/pharmacy_cart_screen.dart';
 import '../../screens/pharmacy/prescription_screen.dart';
 import '../../screens/pharmacy/pharmacy_order_confirmation_screen.dart';
+import '../../screens/pharmacy/order_history_screen.dart';
+import '../../screens/pharmacy/order_details_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/profile/medical_information_screen.dart';
@@ -188,6 +190,14 @@ class AppRouter {
       case AppRoutes.pharmacyOrderConfirmation:
         return MaterialPageRoute(
           builder: (_) => const PharmacyOrderConfirmationScreen(),
+        );
+      case AppRoutes.orderHistory:
+        return MaterialPageRoute(
+          builder: (_) => const OrderHistoryScreen(),
+        );
+      case AppRoutes.orderDetails:
+        return MaterialPageRoute(
+          builder: (_) => const OrderDetailsScreen(),
         );
       case AppRoutes.profile:
         return MaterialPageRoute(
