@@ -1,134 +1,38 @@
 import 'package:flutter/material.dart';
-import '../../core/routes/app_routes.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/section_title.dart';
-import '../../widgets/health_monitoring/health_monitoring_widgets.dart';
+import '../../models/health_metric_model.dart';
+import '../../services/health_metric_service.dart';
 
-class HealthVitalsScreen extends StatelessWidget {
-  HealthVitalsScreen({super.key});
+class HealthVitalsScreen extends StatefulWidget {
+  const HealthVitalsScreen({super.key});
+  @override
+  State<HealthVitalsScreen> createState() => _HealthVitalsScreenState();
+}
 
-  final List<Map<String, dynamic>> _vitals = [
-    {
-      'vitalName': 'Heart Rate',
-      'value': '72',
-      'unit': 'BPM',
-      'icon': Icons.favorite,
-    },
-    {
-      'vitalName': 'Blood Pressure',
-      'value': '120/80',
-      'unit': 'mmHg',
-      'icon': Icons.bloodtype,
-    },
-    {
-      'vitalName': 'Blood Oxygen',
-      'value': '98',
-      'unit': '%',
-      'icon': Icons.air,
-    },
-    {
-      'vitalName': 'Temperature',
-      'value': '36.7',
-      'unit': '°C',
-      'icon': Icons.thermostat,
-    },
-    {
-      'vitalName': 'Respiratory Rate',
-      'value': '16',
-      'unit': 'breaths/min',
-      'icon': Icons.air,
-    },
-    {
-      'vitalName': 'Weight',
-      'value': '70',
-      'unit': 'kg',
-      'icon': Icons.scale,
-    },
-  ];
+class _HealthVitalsScreenState extends State<HealthVitalsScreen> {
+  List<HealthMetric> _metrics = [];
+  bool _loading = true;
+  String? _error;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Vitals'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionTitle(
-                  title: 'Vital Signs',
-                  subtitle: 'Demo measurements',
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Card(
-                  color: AppColors.warningOrange.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.warningOrange),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            'Demo data only. These are sample readings for interface demonstration.',
-                            style: AppTextStyles.caption,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                HealthVitalsGrid(
-                  vitals: _vitals,
-                  onVitalTap: (vitalName) {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.healthMetricDetails,
-                      arguments: {
-                        'metricName': vitalName,
-                        'value': _getVitalValue(vitalName),
-                        'unit': _getVitalUnit(vitalName),
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  void initState() { super.initState(); _load(); }
+
+  Future<void> _load() async {
+    final result = await HealthMetricService.getMetrics();
+    if (!mounted) return;
+    if (result['success'] == true) {
+      final data = result['data'] as Map?;
+      final list = data?['metrics'] as List? ?? [];
+      setState(() { _metrics = list.whereType<Map>().map((item) => HealthMetric.fromJson(Map<String, dynamic>.from(item))).where((item) => ['heart_rate', 'blood_pressure', 'blood_sugar', 'temperature', 'oxygen_level', 'weight', 'height'].contains(item.metricType)).toList(); _loading = false; });
+    } else setState(() { _error = result['message']?.toString() ?? 'Failed to fetch vitals'; _loading = false; });
   }
 
-  String _getVitalValue(String vitalName) {
-    switch (vitalName) {
-      case 'Heart Rate': return '72';
-      case 'Blood Pressure': return '120/80';
-      case 'Blood Oxygen': return '98';
-      case 'Temperature': return '36.7';
-      case 'Respiratory Rate': return '16';
-      case 'Weight': return '70';
-      default: return '--';
-    }
-  }
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Vitals')), body: SafeArea(child: _body()));
 
-  String _getVitalUnit(String vitalName) {
-    switch (vitalName) {
-      case 'Heart Rate': return 'BPM';
-      case 'Blood Pressure': return 'mmHg';
-      case 'Blood Oxygen': return '%';
-      case 'Temperature': return '°C';
-      case 'Respiratory Rate': return 'breaths/min';
-      case 'Weight': return 'kg';
-      default: return '';
-    }
+  Widget _body() {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_error != null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error!), ElevatedButton(onPressed: _load, child: const Text('Retry'))]));
+    return RefreshIndicator(onRefresh: _load, child: ListView(padding: const EdgeInsets.all(AppSpacing.lg), children: [const Text('These values are for personal tracking only. Consult a qualified medical professional for medical interpretation.'), const SizedBox(height: AppSpacing.lg), if (_metrics.isEmpty) const Padding(padding: EdgeInsets.all(AppSpacing.xl), child: Center(child: Text('No vital metrics recorded yet.'))), ..._metrics.map((metric) => Card(child: ListTile(title: Text(metric.metricType.replaceAll('_', ' ')), subtitle: Text(metric.recordedAt.toLocal().toString()), trailing: Text('${metric.value} ${metric.unit}'))))]));
   }
 }

@@ -1,135 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/section_title.dart';
-import '../../widgets/health_monitoring/health_monitoring_widgets.dart';
+import '../../models/activity_log_model.dart';
+import '../../services/activity_log_service.dart';
 
-class HealthActivityScreen extends StatelessWidget {
-  const HealthActivityScreen({super.key});
-
-  List<Map<String, dynamic>> get _weeklyActivity => [
-    {'day': 'Monday', 'steps': '5,200', 'distance': '3.5 km', 'calories': '210'},
-    {'day': 'Tuesday', 'steps': '6,100', 'distance': '4.1 km', 'calories': '245'},
-    {'day': 'Wednesday', 'steps': '7,450', 'distance': '5.0 km', 'calories': '300'},
-    {'day': 'Thursday', 'steps': '6,800', 'distance': '4.6 km', 'calories': '275'},
-    {'day': 'Friday', 'steps': '8,100', 'distance': '5.5 km', 'calories': '325'},
-    {'day': 'Saturday', 'steps': '7,200', 'distance': '4.8 km', 'calories': '290'},
-    {'day': 'Sunday', 'steps': '6,420', 'distance': '4.3 km', 'calories': '260'},
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final totalSteps = _weeklyActivity.fold<int>(
-      0,
-      (sum, item) => sum + int.parse(item['steps'].toString().replaceAll(',', '')),
-    );
-    final averageSteps = (totalSteps / 7).toInt();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Activity'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionTitle(
-                  title: 'Activity Tracking',
-                  subtitle: 'Demo activity data',
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Card(
-                  color: AppColors.warningOrange.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.warningOrange),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            'Demo data only. Activity tracking information is sample data.',
-                            style: AppTextStyles.caption,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Weekly Overview'),
-                const SizedBox(height: AppSpacing.md),
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.directions_walk, color: AppColors.secondaryTeal),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text('Total Steps: $totalSteps', style: AppTextStyles.title),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          children: [
-                            const Icon(Icons.analytics, color: AppColors.secondaryTeal),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text('Daily Average: $averageSteps', style: AppTextStyles.subtitle),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Daily Activity'),
-                const SizedBox(height: AppSpacing.md),
-                HealthMetricChart(
-                  title: 'Weekly Steps',
-                  data: [5200, 6100, 7450, 6800, 8100, 7200, 6420],
-                  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                ..._weeklyActivity.map((activity) => Card(
-                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Text(activity['day'], style: AppTextStyles.title),
-                        ),
-                        Expanded(
-                          child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${activity['steps']} steps', style: AppTextStyles.body),
-                            Text(activity['distance'], style: AppTextStyles.caption),
-                          ],
-                        ),
-                        ),
-                        Expanded(
-                          child: Text('${activity['calories']} kcal', style: AppTextStyles.subtitle),
-                        ),
-                      ],
-                    ),
-                  ),
-                )),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+class HealthActivityScreen extends StatefulWidget { const HealthActivityScreen({super.key}); @override State<HealthActivityScreen> createState() => _HealthActivityScreenState(); }
+class _HealthActivityScreenState extends State<HealthActivityScreen> {
+  List<ActivityLog> _activities = []; bool _loading = true; String? _error; Map<String, dynamic> _summary = {};
+  @override void initState() { super.initState(); _load(); }
+  Future<void> _load() async { setState(() { _loading = true; _error = null; }); final result = await ActivityLogService.getActivities(); if (!mounted) return; if (result['success'] == true) { final data = result['data'] as Map?; final list = data?['activities'] as List? ?? []; setState(() { _activities = list.whereType<Map>().map((item) => ActivityLog.fromJson(Map<String, dynamic>.from(item))).toList(); _summary = data?['summary'] is Map ? Map<String, dynamic>.from(data!['summary'] as Map) : {}; _loading = false; }); } else setState(() { _error = result['message']?.toString() ?? 'Failed to fetch activities'; _loading = false; }); }
+  Future<void> _add() async { final values = await showDialog<Map<String, String>>(context: context, builder: (_) => const _ActivityDialog()); if (values == null) return; final result = await ActivityLogService.createActivity(activityType: values['type']!, durationMinutes: int.parse(values['duration']!), notes: values['notes']); if (!mounted) return; if (result['success'] == true) _load(); else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message']?.toString() ?? 'Failed to create activity'))); }
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Activity')), floatingActionButton: FloatingActionButton(onPressed: _add, child: const Icon(Icons.add)), body: SafeArea(child: _body()));
+  Widget _body() { if (_loading) return const Center(child: CircularProgressIndicator()); if (_error != null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error!), ElevatedButton(onPressed: _load, child: const Text('Retry'))])); return RefreshIndicator(onRefresh: _load, child: ListView(padding: const EdgeInsets.all(AppSpacing.lg), children: [const Text('These values are for personal tracking only. Consult a qualified medical professional for medical interpretation.'), const SizedBox(height: AppSpacing.lg), Text('Total duration: ${_summary['durationMinutes'] ?? 0} minutes'), const SizedBox(height: AppSpacing.md), if (_activities.isEmpty) const Center(child: Padding(padding: EdgeInsets.all(AppSpacing.xl), child: Text('No activities recorded yet.'))), ..._activities.map((activity) => Card(child: ListTile(title: Text(activity.activityType), subtitle: Text('${activity.activityDate.toLocal()}\n${activity.notes ?? ''}'), isThreeLine: activity.notes != null, trailing: Text('${activity.durationMinutes} min'))))])); }
 }
+class _ActivityDialog extends StatefulWidget { const _ActivityDialog(); @override State<_ActivityDialog> createState() => _ActivityDialogState(); }
+class _ActivityDialogState extends State<_ActivityDialog> { final _duration = TextEditingController(); final _notes = TextEditingController(); String _type = 'walking'; @override void dispose() { _duration.dispose(); _notes.dispose(); super.dispose(); } @override Widget build(BuildContext context) => AlertDialog(title: const Text('Add Activity'), content: Column(mainAxisSize: MainAxisSize.min, children: [DropdownButtonFormField<String>(initialValue: _type, items: const ['walking', 'running', 'cycling', 'gym', 'yoga', 'sports', 'other'].map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(), onChanged: (value) => setState(() => _type = value ?? 'other')), TextField(controller: _duration, keyboardType: TextInputType.number, onChanged: (_) => setState(() {}), decoration: const InputDecoration(labelText: 'Duration (minutes) *')), TextField(controller: _notes, decoration: const InputDecoration(labelText: 'Notes'))]), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), ElevatedButton(onPressed: int.tryParse(_duration.text) == null ? null : () => Navigator.pop(context, {'type': _type, 'duration': _duration.text, 'notes': _notes.text}), child: const Text('Save'))]); }

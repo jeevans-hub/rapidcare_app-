@@ -2,183 +2,63 @@ import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/section_title.dart';
-import '../../widgets/health_monitoring/health_monitoring_widgets.dart';
+import '../../models/health_metric_model.dart';
+import '../../services/health_metric_service.dart';
 
-class HealthMonitoringScreen extends StatelessWidget {
+class HealthMonitoringScreen extends StatefulWidget {
   const HealthMonitoringScreen({super.key});
+  @override
+  State<HealthMonitoringScreen> createState() => _HealthMonitoringScreenState();
+}
 
-  Map<String, String> get _todaySummary => {
-    'Steps': '6,420',
-    'Sleep': '7h 20m',
-    'Water': '5 / 8 glasses',
-    'Active Minutes': '24',
-  };
-
-  List<Map<String, dynamic>> get _vitals => [
-    {
-      'vitalName': 'Heart Rate',
-      'value': '72',
-      'unit': 'BPM',
-      'icon': Icons.favorite,
-    },
-    {
-      'vitalName': 'Blood Pressure',
-      'value': '120/80',
-      'unit': 'mmHg',
-      'icon': Icons.bloodtype,
-    },
-    {
-      'vitalName': 'Blood Oxygen',
-      'value': '98',
-      'unit': '%',
-      'icon': Icons.air,
-    },
-    {
-      'vitalName': 'Temperature',
-      'value': '36.7',
-      'unit': '°C',
-      'icon': Icons.thermostat,
-    },
-  ];
+class _HealthMonitoringScreenState extends State<HealthMonitoringScreen> {
+  List<HealthMetric> _metrics = [];
+  bool _loading = true;
+  String? _error;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Health Monitoring'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const HealthMonitoringHeader(),
-                const SizedBox(height: AppSpacing.lg),
-                Card(
-                  color: AppColors.warningOrange.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.warningOrange),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            'Demo data only. This module does not collect real health measurements.',
-                            style: AppTextStyles.caption,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Today\'s Summary'),
-                const SizedBox(height: AppSpacing.md),
-                HealthSummaryCard(summary: _todaySummary),
-                const SizedBox(height: AppSpacing.xl),
-                const SectionTitle(title: 'Vital Metrics'),
-                const SizedBox(height: AppSpacing.md),
-                HealthVitalsGrid(
-                  vitals: _vitals,
-                  onVitalTap: (vitalName) {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.healthMetricDetails,
-                      arguments: {
-                        'metricName': vitalName,
-                        'value': _getVitalValue(vitalName),
-                        'unit': _getVitalUnit(vitalName),
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                const SectionTitle(title: 'Quick Access'),
-                const SizedBox(height: AppSpacing.md),
-                ListTile(
-                  leading: const Icon(Icons.monitor_heart),
-                  title: const Text('All Vitals'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthVitals);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.directions_walk),
-                  title: const Text('Activity'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthActivity);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.flag),
-                  title: const Text('Health Goals'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthGoals);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.history),
-                  title: const Text('Health History'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthHistory);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.assessment),
-                  title: const Text('Health Reports'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthReports);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.help_outline),
-                  title: const Text('Help & Information'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthMonitoringHelp);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  void initState() { super.initState(); _load(); }
+
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    final result = await HealthMetricService.getMetrics();
+    if (!mounted) return;
+    if (result['success'] == true) { final data = result['data'] as Map?; final values = data?['metrics'] as List? ?? []; setState(() { _metrics = values.whereType<Map>().map((item) => HealthMetric.fromJson(Map<String, dynamic>.from(item))).toList(); _loading = false; }); } else setState(() { _error = result['message']?.toString() ?? 'Failed to fetch health metrics'; _loading = false; });
   }
 
-  String _getVitalValue(String vitalName) {
-    switch (vitalName) {
-      case 'Heart Rate': return '72';
-      case 'Blood Pressure': return '120/80';
-      case 'Blood Oxygen': return '98';
-      case 'Temperature': return '36.7';
-      default: return '--';
-    }
+  Future<void> _add() async {
+    final values = await showDialog<Map<String, String>>(context: context, builder: (_) => const _MetricDialog());
+    if (values == null) return;
+    final result = await HealthMetricService.createMetric(metricType: values['metricType']!, value: values['value']!, unit: values['unit']!, notes: values['notes']);
+    if (!mounted) return;
+    if (result['success'] == true) _load(); else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message']?.toString() ?? 'Failed to create metric')));
   }
 
-  String _getVitalUnit(String vitalName) {
-    switch (vitalName) {
-      case 'Heart Rate': return 'BPM';
-      case 'Blood Pressure': return 'mmHg';
-      case 'Blood Oxygen': return '%';
-      case 'Temperature': return '°C';
-      default: return '';
-    }
+  String _label(String type) => type.replaceAll('_', ' ').split(' ').map((part) => part.isEmpty ? part : '${part[0].toUpperCase()}${part.substring(1)}').join(' ');
+  IconData _icon(String type) { switch (type) { case 'heart_rate': return Icons.favorite; case 'blood_pressure': return Icons.bloodtype; case 'oxygen_level': return Icons.air; case 'temperature': return Icons.thermostat; case 'weight': return Icons.scale; case 'steps': return Icons.directions_walk; default: return Icons.monitor_heart; } }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Health Monitoring'), actions: [IconButton(onPressed: () => Navigator.pushNamed(context, AppRoutes.healthReports), icon: const Icon(Icons.assessment))]), floatingActionButton: FloatingActionButton(onPressed: _add, child: const Icon(Icons.add)), body: SafeArea(child: _body()));
+
+  Widget _body() {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_error != null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error!), const SizedBox(height: AppSpacing.md), ElevatedButton(onPressed: _load, child: const Text('Retry'))]));
+    return RefreshIndicator(onRefresh: _load, child: ListView(padding: const EdgeInsets.all(AppSpacing.lg), children: [
+      Card(color: AppColors.warningOrange.withValues(alpha: 0.1), child: const Padding(padding: EdgeInsets.all(AppSpacing.md), child: Text('These values are for personal tracking only. Consult a qualified medical professional for medical interpretation.'))),
+      const SizedBox(height: AppSpacing.lg),
+      Text('Recorded Metrics', style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: AppSpacing.md),
+      if (_metrics.isEmpty) const Padding(padding: EdgeInsets.all(AppSpacing.xl), child: Center(child: Text('No health metrics recorded yet.'))),
+      ..._metrics.map((metric) => Card(child: ListTile(leading: Icon(_icon(metric.metricType), color: AppColors.primaryBlue), title: Text(_label(metric.metricType)), subtitle: Text('${metric.recordedAt.toLocal()}\n${metric.notes ?? ''}'), isThreeLine: metric.notes != null, trailing: Text('${metric.value} ${metric.unit}'), onTap: () => Navigator.pushNamed(context, AppRoutes.healthMetricDetails, arguments: {'metric': metric}).then((_) => _load())))),
+      const SizedBox(height: AppSpacing.lg),
+      ListTile(leading: const Icon(Icons.directions_walk), title: const Text('Activity'), trailing: const Icon(Icons.arrow_forward_ios, size: 16), onTap: () => Navigator.pushNamed(context, AppRoutes.healthActivity)),
+      ListTile(leading: const Icon(Icons.history), title: const Text('Health History'), trailing: const Icon(Icons.arrow_forward_ios, size: 16), onTap: () => Navigator.pushNamed(context, AppRoutes.healthHistory)),
+    ]));
   }
+}
+
+class _MetricDialog extends StatefulWidget { const _MetricDialog(); @override State<_MetricDialog> createState() => _MetricDialogState(); }
+class _MetricDialogState extends State<_MetricDialog> {
+  final _value = TextEditingController(); final _unit = TextEditingController(); final _notes = TextEditingController(); String _type = 'heart_rate';
+  @override void dispose() { _value.dispose(); _unit.dispose(); _notes.dispose(); super.dispose(); }
+  @override Widget build(BuildContext context) => AlertDialog(title: const Text('Add Health Metric'), content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [DropdownButtonFormField<String>(initialValue: _type, items: const ['heart_rate', 'blood_pressure', 'blood_sugar', 'temperature', 'oxygen_level', 'weight', 'steps', 'sleep', 'water_intake', 'calories', 'general'].map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(), onChanged: (value) => setState(() => _type = value ?? 'general')), TextField(controller: _value, decoration: const InputDecoration(labelText: 'Value *')), TextField(controller: _unit, decoration: const InputDecoration(labelText: 'Unit *')), TextField(controller: _notes, decoration: const InputDecoration(labelText: 'Notes'))])), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), ElevatedButton(onPressed: _value.text.trim().isEmpty || _unit.text.trim().isEmpty ? null : () => Navigator.pop(context, {'metricType': _type, 'value': _value.text.trim(), 'unit': _unit.text.trim(), 'notes': _notes.text.trim()}), child: const Text('Save'))]);
 }

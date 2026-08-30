@@ -1,158 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/section_title.dart';
+import '../../models/health_summary_model.dart';
+import '../../services/health_metric_service.dart';
 import '../../widgets/health_reports/health_reports_widgets.dart';
 
-class HealthReportsScreen extends StatelessWidget {
-  const HealthReportsScreen({super.key});
-
-  Map<String, String> get _todaySummary => {
-    'Steps': '6,420',
-    'Sleep': '7h 20m',
-    'Water': '5 / 8 glasses',
-    'Active Minutes': '24',
-  };
-
-  List<Map<String, dynamic>> get _recentReports => [
-    {
-      'title': 'Weekly Health Summary',
-      'category': 'Wellness',
-      'date': 'Demo — 18 Aug 2026',
-      'description': 'Comprehensive weekly health overview',
-      'status': 'Sample',
-    },
-    {
-      'title': 'Vital Signs Report',
-      'category': 'Vitals',
-      'date': 'Demo — 15 Aug 2026',
-      'description': 'Heart rate, blood pressure, oxygen levels',
-      'status': 'Sample',
-    },
-    {
-      'title': 'Activity Report',
-      'category': 'Activity',
-      'date': 'Demo — 12 Aug 2026',
-      'description': 'Steps, distance, calories burned',
-      'status': 'Sample',
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Health Reports'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const HealthReportsHeader(),
-                const SizedBox(height: AppSpacing.lg),
-                Card(
-                  color: AppColors.warningOrange.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.warningOrange),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            'Demo reports only. This module uses fictional sample data.',
-                            style: AppTextStyles.caption,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Latest Summary'),
-                const SizedBox(height: AppSpacing.md),
-                HealthReportSummaryCard(
-                  summary: _todaySummary,
-                  reportCount: 7,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                const SectionTitle(title: 'Recent Reports'),
-                const SizedBox(height: AppSpacing.md),
-                ..._recentReports.map((report) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: HealthReportCard(
-                    title: report['title'],
-                    category: report['category'],
-                    date: report['date'],
-                    description: report['description'],
-                    status: report['status'],
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.healthReportDetails,
-                        arguments: report,
-                      );
-                    },
-                  ),
-                )),
-                const SizedBox(height: AppSpacing.xl),
-                const SectionTitle(title: 'Quick Access'),
-                const SizedBox(height: AppSpacing.md),
-                ListTile(
-                  leading: const Icon(Icons.category),
-                  title: const Text('Report Types'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthReportTypes);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.history),
-                  title: const Text('Report History'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthReportHistory);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.analytics),
-                  title: const Text('Analytics'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthReportAnalytics);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.compare),
-                  title: const Text('Comparison'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthReportComparison);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.help_outline),
-                  title: const Text('Help & Information'),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.healthReportsHelp);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+class HealthReportsScreen extends StatefulWidget { const HealthReportsScreen({super.key}); @override State<HealthReportsScreen> createState() => _HealthReportsScreenState(); }
+class _HealthReportsScreenState extends State<HealthReportsScreen> {
+  HealthSummary? _summary; bool _loading = true; String? _error;
+  @override void initState() { super.initState(); _load(); }
+  Future<void> _load() async { setState(() { _loading = true; _error = null; }); final result = await HealthMetricService.getSummary(); if (!mounted) return; if (result['success'] == true) { final data = result['data']; if (data is Map) setState(() { _summary = HealthSummary.fromJson(Map<String, dynamic>.from(data)); _loading = false; }); } else setState(() { _error = result['message']?.toString() ?? 'Failed to fetch health summary'; _loading = false; }); }
+  String _value(dynamic metric) => metric == null ? 'Not recorded' : '${metric.value} ${metric.unit}';
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Health Reports')), body: SafeArea(child: _body()));
+  Widget _body() { if (_loading) return const Center(child: CircularProgressIndicator()); if (_error != null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error!), ElevatedButton(onPressed: _load, child: const Text('Retry'))])); final summary = _summary!; return RefreshIndicator(onRefresh: _load, child: ListView(padding: const EdgeInsets.all(AppSpacing.lg), children: [const Text('These summaries are for personal tracking only. Consult a qualified medical professional for medical interpretation.'), const SizedBox(height: AppSpacing.lg), HealthReportInfoCard(icon: Icons.assessment, title: 'Recorded Metrics', content: '${summary.totalMetrics} health metrics recorded.'), const SizedBox(height: AppSpacing.md), HealthReportInfoCard(icon: Icons.favorite, title: 'Latest Heart Rate', content: _value(summary.latestHeartRate)), const SizedBox(height: AppSpacing.md), HealthReportInfoCard(icon: Icons.bloodtype, title: 'Latest Blood Pressure', content: _value(summary.latestBloodPressure)), const SizedBox(height: AppSpacing.md), HealthReportInfoCard(icon: Icons.scale, title: 'Latest Weight', content: _value(summary.latestWeight)), const SizedBox(height: AppSpacing.lg), ListTile(leading: const Icon(Icons.analytics), title: const Text('Analytics'), trailing: const Icon(Icons.arrow_forward_ios, size: 16), onTap: () => Navigator.pushNamed(context, AppRoutes.healthReportAnalytics)), ListTile(leading: const Icon(Icons.history), title: const Text('Health History'), trailing: const Icon(Icons.arrow_forward_ios, size: 16), onTap: () => Navigator.pushNamed(context, AppRoutes.healthHistory))])); }
 }

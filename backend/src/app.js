@@ -15,6 +15,8 @@ const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const reminderRoutes = require('./routes/reminder.routes');
+const healthMetricRoutes = require('./routes/healthMetric.routes');
+const activityLogRoutes = require('./routes/activityLog.routes');
 
 const app = express();
 
@@ -35,6 +37,8 @@ app.use(`${config.apiPrefix}/cart`, cartRoutes);
 app.use(`${config.apiPrefix}/orders`, orderRoutes);
 app.use(`${config.apiPrefix}/notifications`, notificationRoutes);
 app.use(`${config.apiPrefix}/reminders`, reminderRoutes);
+app.use(`${config.apiPrefix}/health-metrics`, healthMetricRoutes);
+app.use(`${config.apiPrefix}/activity-logs`, activityLogRoutes);
 
 // 404 handler
 app.use(notFound);

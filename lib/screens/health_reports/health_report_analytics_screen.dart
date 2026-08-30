@@ -1,108 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/section_title.dart';
-import '../../widgets/health_reports/health_reports_widgets.dart';
+import '../../models/health_summary_model.dart';
+import '../../services/health_metric_service.dart';
 
-class HealthReportAnalyticsScreen extends StatelessWidget {
-  const HealthReportAnalyticsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionTitle(
-                  title: 'Health Analytics',
-                  subtitle: 'Demo analytics overview',
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Card(
-                  color: AppColors.warningOrange.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.warningOrange),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            'Demo analytics only. Analytics data is sample data.',
-                            style: AppTextStyles.caption,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                HealthReportSection(
-                  title: 'Weekly Activity Trend',
-                  children: [
-                    HealthReportChart(
-                      title: 'Steps (Demo)',
-                      data: [5200, 6100, 7450, 6800, 8100, 7200, 6420],
-                      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    ),
-                  ],
-                ),
-                HealthReportSection(
-                  title: 'Sleep Trend',
-                  children: [
-                    HealthReportChart(
-                      title: 'Sleep Hours (Demo)',
-                      data: [7.2, 6.8, 7.5, 8.0, 7.3, 7.8, 7.2],
-                      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    ),
-                  ],
-                ),
-                HealthReportSection(
-                  title: 'Hydration Progress',
-                  children: [
-                    HealthReportChart(
-                      title: 'Water Glasses (Demo)',
-                      data: [5, 6, 7, 8, 6, 7, 5],
-                      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    ),
-                  ],
-                ),
-                HealthReportSection(
-                  title: 'Vital Measurement History',
-                  children: [
-                    HealthReportChart(
-                      title: 'Heart Rate (Demo)',
-                      data: [70, 73, 72, 75, 71, 74, 72],
-                      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                HealthReportInfoCard(
-                  icon: Icons.info_outline,
-                  title: 'Demo Analytics',
-                  content: 'Analytics shown are fictional sample data for interface demonstration.',
-                ),
-                const SizedBox(height: AppSpacing.md),
-                HealthReportInfoCard(
-                  icon: Icons.warning,
-                  title: 'No Medical Interpretation',
-                  content: 'These trends do not represent medical conclusions or health assessments.',
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+class HealthReportAnalyticsScreen extends StatefulWidget { const HealthReportAnalyticsScreen({super.key}); @override State<HealthReportAnalyticsScreen> createState() => _HealthReportAnalyticsScreenState(); }
+class _HealthReportAnalyticsScreenState extends State<HealthReportAnalyticsScreen> {
+  HealthSummary? _summary; bool _loading = true; String? _error;
+  @override void initState() { super.initState(); _load(); }
+  Future<void> _load() async { final result = await HealthMetricService.getSummary(); if (!mounted) return; if (result['success'] == true && result['data'] is Map) setState(() { _summary = HealthSummary.fromJson(Map<String, dynamic>.from(result['data'] as Map)); _loading = false; }); else setState(() { _error = result['message']?.toString() ?? 'Failed to fetch analytics'; _loading = false; }); }
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Analytics')), body: SafeArea(child: _body()));
+  Widget _body() { if (_loading) return const Center(child: CircularProgressIndicator()); if (_error != null) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error!), ElevatedButton(onPressed: _load, child: const Text('Retry'))])); final summary = _summary!; final entries = summary.metricCountsByType.entries.toList(); return RefreshIndicator(onRefresh: _load, child: ListView(padding: const EdgeInsets.all(AppSpacing.lg), children: [const Text('These summaries are for personal tracking only. Consult a qualified medical professional for medical interpretation.'), const SizedBox(height: AppSpacing.lg), Text('Metrics by type', style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: AppSpacing.md), if (entries.isEmpty) const Padding(padding: EdgeInsets.all(AppSpacing.xl), child: Center(child: Text('No data available for analytics.'))), ...entries.map((entry) => Card(child: ListTile(title: Text(entry.key.replaceAll('_', ' ')), trailing: Text('${entry.value} records'))))])); }
 }

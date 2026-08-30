@@ -1,0 +1,12 @@
+const express = require('express');
+const auth = require('../middleware/auth');
+const controller = require('../controllers/healthMetric.controller');
+const router = express.Router();
+router.use(auth);
+router.post('/', controller.createMetric);
+router.get('/', controller.getMetrics);
+router.get('/summary', controller.getSummary);
+router.get('/:id', controller.getMetricById);
+router.put('/:id', controller.updateMetric);
+router.delete('/:id', controller.deleteMetric);
+module.exports = router;
