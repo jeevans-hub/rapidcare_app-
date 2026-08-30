@@ -1,166 +1,123 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/primary_button.dart';
+import '../../models/reminder_model.dart';
+import '../../services/reminder_service.dart';
 
-class ReminderDetailsScreen extends StatelessWidget {
+class ReminderDetailsScreen extends StatefulWidget {
   const ReminderDetailsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic>? reminder =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-    final title = reminder?['title']?.toString() ?? 'Doctor Appointment';
-    final description = reminder?['description']?.toString() ?? 'Dr. Sarah Johnson';
-    final category = reminder?['category']?.toString() ?? 'Appointment';
-    final date = reminder?['date']?.toString() ?? 'Aug 12, 2026';
-    final time = reminder?['time']?.toString() ?? '10:00 AM';
-    final repeat = reminder?['repeat']?.toString() ?? 'Once';
-    final status = reminder?['status']?.toString() ?? 'Active';
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reminder Details'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    Icons.calendar_today,
-                    color: AppColors.primaryBlue,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  title,
-                  style: AppTextStyles.title,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  description,
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.textSecondaryGrey,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                _InfoSection(
-                  icon: Icons.category,
-                  label: 'Category',
-                  value: category,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoSection(
-                  icon: Icons.calendar_today,
-                  label: 'Date',
-                  value: date,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoSection(
-                  icon: Icons.access_time,
-                  label: 'Time',
-                  value: time,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoSection(
-                  icon: Icons.repeat,
-                  label: 'Repeat',
-                  value: repeat,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoSection(
-                  icon: Icons.check_circle,
-                  label: 'Status',
-                  value: status,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Row(
-                  children: [
-                    Expanded(
-                      child: PrimaryButton(
-                        text: 'Edit Reminder',
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.medium),
-                          ),
-                          side: const BorderSide(color: AppColors.errorRed),
-                        ),
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: AppColors.errorRed),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<ReminderDetailsScreen> createState() => _ReminderDetailsScreenState();
 }
 
-class _InfoSection extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
+class _ReminderDetailsScreenState extends State<ReminderDetailsScreen> {
+  Reminder? _reminder;
+  bool _loading = true;
+  String? _error;
+  String? _id;
 
-  const _InfoSection({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_id != null) return;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map) _id = args['reminderId']?.toString();
+    if (_id != null) _load();
+  }
+
+  Future<void> _load() async {
+    final result = await ReminderService.getReminder(_id!);
+    if (!mounted) return;
+    if (result['success'] == true) {
+      final data = result['data'];
+      final reminderData = data is Map ? data['reminder'] : null;
+      if (reminderData is Map) {
+        setState(() {
+          _reminder = Reminder.fromJson(Map<String, dynamic>.from(reminderData));
+          _loading = false;
+        });
+        return;
+      }
+    }
+    setState(() {
+      _error = result['message']?.toString() ?? 'Failed to fetch reminder';
+      _loading = false;
+    });
+  }
+
+  Future<void> _action(Future<Map<String, dynamic>> request) async {
+    final result = await request;
+    if (!mounted) return;
+    if (result['success'] == true) {
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message']?.toString() ?? 'Request failed')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: AppColors.primaryBlue,
-          size: 20,
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Text(
-          '$label:',
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.textSecondaryGrey,
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_error != null || _reminder == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_error ?? 'Reminder not found'),
+              ElevatedButton(onPressed: _load, child: const Text('Retry')),
+            ],
           ),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          value,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w500,
+      );
+    }
+
+    final reminder = _reminder!;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Reminder Details')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(reminder.title, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.sm),
+              Text(reminder.description ?? 'No description'),
+              const SizedBox(height: AppSpacing.lg),
+              Text('Type: ${reminder.reminderType}'),
+              Text('Date: ${reminder.reminderDate ?? 'Not set'}'),
+              Text('Time: ${reminder.reminderTime ?? 'Not set'}'),
+              Text('Repeat: ${reminder.repeat}'),
+              Text('Status: ${reminder.status}'),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: reminder.status == 'pending'
+                          ? () => _action(ReminderService.completeReminder(reminder.id))
+                          : null,
+                      child: const Text('Complete'),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _action(ReminderService.deleteReminder(reminder.id)),
+                      child: const Text('Delete'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

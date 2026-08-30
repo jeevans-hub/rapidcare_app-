@@ -36,8 +36,10 @@ class NotificationGroup extends StatelessWidget {
               title: notification.title,
               description: notification.description,
               time: notification.time,
+              priority: notification.priority,
               isRead: notification.isRead,
               onTap: notification.onTap,
+              onDelete: notification.onDelete,
             ),
           );
         }),
@@ -51,15 +53,19 @@ class NotificationItem {
   final String title;
   final String description;
   final String time;
+  final String priority;
   final bool isRead;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
 
   NotificationItem({
     required this.type,
     required this.title,
     required this.description,
     required this.time,
+    this.priority = 'normal',
     this.isRead = false,
     this.onTap,
+    this.onDelete,
   });
 }

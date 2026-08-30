@@ -10,8 +10,10 @@ class NotificationCard extends StatelessWidget {
   final String title;
   final String description;
   final String time;
+  final String priority;
   final bool isRead;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
 
   const NotificationCard({
     super.key,
@@ -19,8 +21,10 @@ class NotificationCard extends StatelessWidget {
     required this.title,
     required this.description,
     required this.time,
+    this.priority = 'normal',
     this.isRead = false,
     this.onTap,
+    this.onDelete,
   });
 
   @override
@@ -67,9 +71,19 @@ class NotificationCard extends StatelessWidget {
                       color: AppColors.textSecondaryGrey,
                     ),
                   ),
+                  Text(
+                    'Priority: $priority',
+                    style: AppTextStyles.small.copyWith(
+                      color: priority == 'high'
+                          ? AppColors.errorRed
+                          : AppColors.textSecondaryGrey,
+                    ),
+                  ),
                 ],
               ),
             ),
+            if (onDelete != null)
+              IconButton(icon: const Icon(Icons.delete_outline), onPressed: onDelete),
             if (!isRead)
               Container(
                 width: 8,

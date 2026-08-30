@@ -1,158 +1,46 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
+import '../../models/notification_model.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/notifications/notification_widgets.dart';
 
-class NotificationDetailsScreen extends StatelessWidget {
+class NotificationDetailsScreen extends StatefulWidget {
   const NotificationDetailsScreen({super.key});
-
   @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic>? notification =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-    final title = notification?['title']?.toString() ?? 'Appointment Reminder';
-    final description = notification?['description']?.toString() ?? 'Your appointment details';
-    final category = notification?['category']?.toString() ?? 'Appointment';
-    final date = notification?['date']?.toString() ?? 'Aug 12, 2026';
-    final time = notification?['time']?.toString() ?? '10:00 AM';
-    final type = notification?['type'];
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notification Details'),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                NotificationTypeIcon(
-                  type: type == 'medicine'
-                      ? NotificationType.medicine
-                      : type == 'health'
-                          ? NotificationType.health
-                          : type == 'pharmacy'
-                              ? NotificationType.pharmacy
-                              : type == 'emergency'
-                                  ? NotificationType.emergency
-                                  : NotificationType.appointment,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  title,
-                  style: AppTextStyles.title,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  description,
-                  style: AppTextStyles.body.copyWith(
-                    color: AppColors.textSecondaryGrey,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                _InfoRow(
-                  icon: Icons.category,
-                  label: 'Category',
-                  value: category,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoRow(
-                  icon: Icons.calendar_today,
-                  label: 'Date',
-                  value: date,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _InfoRow(
-                  icon: Icons.access_time,
-                  label: 'Time',
-                  value: time,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.medium),
-                          ),
-                        ),
-                        child: const Text('Mark as Read'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.medium),
-                          ),
-                          side: const BorderSide(color: AppColors.errorRed),
-                        ),
-                        child: const Text(
-                          'Delete',
-                          style: TextStyle(color: AppColors.errorRed),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<NotificationDetailsScreen> createState() => _NotificationDetailsScreenState();
 }
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
+class _NotificationDetailsScreenState extends State<NotificationDetailsScreen> {
+  AppNotification? _notification;
+  bool _busy = false;
 
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (_notification == null && args is Map && args['notification'] is AppNotification) {
+      _notification = args['notification'] as AppNotification;
+      if (!_notification!.isRead) NotificationService.markAsRead(_notification!.id);
+    }
+  }
+
+  NotificationType _type(String type) { switch (type) { case 'appointment': return NotificationType.appointment; case 'reminder': return NotificationType.medicine; case 'medical_record': return NotificationType.health; case 'pharmacy_order': return NotificationType.pharmacy; default: return NotificationType.general; } }
+
+  Future<void> _delete() async {
+    if (_notification == null || _busy) return;
+    setState(() => _busy = true);
+    final result = await NotificationService.deleteNotification(_notification!.id);
+    if (!mounted) return;
+    if (result['success'] == true) Navigator.pop(context, true); else setState(() => _busy = false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: AppColors.primaryBlue,
-          size: 20,
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Text(
-          '$label:',
-          style: AppTextStyles.body.copyWith(
-            color: AppColors.textSecondaryGrey,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          value,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
+    final notification = _notification;
+    if (notification == null) return const Scaffold(body: Center(child: Text('Notification not found')));
+    return Scaffold(appBar: AppBar(title: const Text('Notification Details')), body: SafeArea(child: SingleChildScrollView(padding: const EdgeInsets.all(AppSpacing.lg), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      NotificationTypeIcon(type: _type(notification.type)), const SizedBox(height: AppSpacing.lg), Text(notification.title, style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: AppSpacing.sm), Text(notification.message), const SizedBox(height: AppSpacing.lg), Text('Type: ${notification.type}'), const SizedBox(height: AppSpacing.sm), Text('Priority: ${notification.priority}'), const SizedBox(height: AppSpacing.sm), Text('Received: ${notification.createdAt.toLocal()}'), const SizedBox(height: AppSpacing.xl),
+      Row(children: [Expanded(child: OutlinedButton(onPressed: _busy ? null : () async { await NotificationService.markAsRead(notification.id); if (mounted) Navigator.pop(context, true); }, child: const Text('Mark as Read'))), const SizedBox(width: AppSpacing.md), Expanded(child: OutlinedButton(onPressed: _busy ? null : _delete, child: const Text('Delete')))]),
+    ]))));
   }
 }
