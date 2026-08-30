@@ -37,6 +37,8 @@ This backend provides the REST API foundation for the RapidCare Flutter applicat
    PORT=5000
    MONGODB_URI=mongodb://localhost:27017/rapidcare
    API_PREFIX=/api/v1
+   JWT_SECRET=replace-with-a-local-secret
+   JWT_EXPIRES_IN=7d
    ```
 
 3. For MongoDB Atlas, use your connection string:
@@ -132,7 +134,7 @@ All API endpoints are prefixed with `/api/v1` to support future versioning.
 
 - Never commit `.env` file with real credentials
 - Use environment-specific configurations
-- Implement proper authentication (planned for Phase 27)
+- Use JWT authentication for protected routes
 - Validate all input data
 - Use HTTPS in production
 
@@ -147,17 +149,16 @@ All API endpoints are prefixed with `/api/v1` to support future versioning.
 - ✅ 404 handling
 - ✅ Health check endpoint
 - ✅ Graceful shutdown
+- ✅ JWT authentication and user management
+- ✅ Doctors and appointments
+- ✅ Medical records and prescriptions
+- ✅ Medicines, carts, and cash-on-delivery orders
+- ✅ Notifications and reminders
+- ✅ Health metrics, activity logs, and summary reports
 
-## Planned Features
+## Scope limitations
 
-- 🔲 User authentication (JWT)
-- 🔲 User registration and login
-- 🔲 Doctor management
-- 🔲 Appointment booking
-- 🔲 Medical records
-- 🔲 Health monitoring data
-- 🔲 Insurance claims
-- 🔲 Notifications
+This project does not implement real payment processing, push notifications, SMS/email delivery, wearable integration, AI diagnosis, medical advice, or admin workflows.
 
 ## Troubleshooting
 

@@ -82,7 +82,7 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
         title: const Text('Pharmacy'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.notifications),
             icon: const Icon(Icons.notifications_outlined),
           ),
           IconButton(

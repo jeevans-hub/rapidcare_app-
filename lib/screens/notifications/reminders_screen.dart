@@ -34,7 +34,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   ReminderStatus _status(String status) => status == 'completed' ? ReminderStatus.completed : status == 'cancelled' ? ReminderStatus.paused : ReminderStatus.active;
   IconData _icon(String type) { switch (type) { case 'medicine': return Icons.medication; case 'appointment': return Icons.calendar_today; case 'exercise': return Icons.directions_walk; case 'water': return Icons.water_drop; case 'health_checkup': return Icons.health_and_safety; default: return Icons.notifications; } }
-  String _dateTime(Reminder reminder) => [reminder.reminderDate, reminder.reminderTime].where((value) => value != null && value!.isNotEmpty).join(' — ').isEmpty ? 'No date or time set' : [reminder.reminderDate, reminder.reminderTime].where((value) => value != null && value!.isNotEmpty).join(' — ');
+  String _dateTime(Reminder reminder) {
+    final values = [reminder.reminderDate, reminder.reminderTime].where((value) => value?.isNotEmpty == true).join(' — ');
+    return values.isEmpty ? 'No date or time set' : values;
+  }
 
   Future<void> _createReminder() async {
     final values = await showDialog<Map<String, String>>(context: context, builder: (_) => const _ReminderDialog());

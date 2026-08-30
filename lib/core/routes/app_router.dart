@@ -17,7 +17,6 @@ import '../../screens/emergency/emergency_home_screen.dart';
 import '../../screens/emergency/ambulance_request_screen.dart';
 import '../../screens/emergency/emergency_contacts_screen.dart';
 import '../../screens/emergency/first_aid_screen.dart';
-import '../../screens/pharmacy/pharmacy_screen.dart';
 import '../../screens/pharmacy/pharmacy_home_screen.dart';
 import '../../screens/pharmacy/medicine_details_screen.dart';
 import '../../screens/pharmacy/pharmacy_cart_screen.dart';
@@ -169,7 +168,7 @@ class AppRouter {
         );
       case AppRoutes.pharmacy:
         return MaterialPageRoute(
-          builder: (_) => const PharmacyScreen(),
+          builder: (_) => const PharmacyHomeScreen(),
         );
       case AppRoutes.pharmacyHome:
         return MaterialPageRoute(
