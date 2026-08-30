@@ -107,6 +107,13 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Medical Records'),
+        actions: [
+          IconButton(
+            tooltip: 'Add Medical Record',
+            icon: const Icon(Icons.add),
+            onPressed: _openAddMedicalRecord,
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -117,6 +124,18 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: MedicalRecordsHeader(),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _openAddMedicalRecord,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Medical Record'),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               Padding(
@@ -275,17 +294,19 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.pushNamed(
-            context,
-            AppRoutes.addMedicalRecord,
-          );
-          if (result == true) {
-            _loadMedicalRecords();
-          }
-        },
+        onPressed: _openAddMedicalRecord,
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _openAddMedicalRecord() async {
+    final result = await Navigator.pushNamed(
+      context,
+      AppRoutes.addMedicalRecord,
+    );
+    if (result == true && mounted) {
+      await _loadMedicalRecords();
+    }
   }
 }

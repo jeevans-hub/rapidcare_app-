@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../widgets/section_title.dart';
+import '../../core/routes/app_routes.dart';
 import 'health_tip_card.dart';
 
 class HealthTipsSection extends StatelessWidget {
@@ -19,27 +20,31 @@ class HealthTipsSection extends StatelessWidget {
             height: 180,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              children: const [
+              children: [
                 HealthTipCard(
                   icon: Icons.nights_stay,
                   title: 'Sleep Better',
                   description: 'Get 7-8 hours of quality sleep for better health.',
+                  onReadMore: () => Navigator.pushNamed(context, AppRoutes.healthArticleDetails, arguments: {'title': 'Healthy Sleep Habits', 'category': 'Sleep', 'readingTime': '6 min read', 'icon': Icons.bedtime}),
                 ),
                 SizedBox(width: AppSpacing.md),
                 HealthTipCard(
                   icon: Icons.water_drop,
                   title: 'Stay Hydrated',
                   description: 'Drink at least 8 glasses of water daily.',
+                  onReadMore: () => Navigator.pushNamed(context, AppRoutes.healthArticleDetails, arguments: {'title': 'Staying Hydrated', 'category': 'Nutrition', 'readingTime': '3 min read', 'icon': Icons.water_drop}),
                 ),
                 HealthTipCard(
                   icon: Icons.directions_run,
                   title: 'Exercise Daily',
                   description: '30 minutes of exercise keeps you fit.',
+                  onReadMore: () => Navigator.pushNamed(context, AppRoutes.healthArticleDetails, arguments: {'title': 'Importance of Regular Exercise', 'category': 'Exercise', 'readingTime': '4 min read', 'icon': Icons.directions_run}),
                 ),
                 HealthTipCard(
                   icon: Icons.restaurant,
                   title: 'Eat Healthy',
                   description: 'Include fruits and vegetables in your diet.',
+                  onReadMore: () => Navigator.pushNamed(context, AppRoutes.healthArticleDetails, arguments: {'title': 'Understanding Balanced Nutrition', 'category': 'Nutrition', 'readingTime': '8 min read', 'icon': Icons.restaurant}),
                 ),
               ],
             ),

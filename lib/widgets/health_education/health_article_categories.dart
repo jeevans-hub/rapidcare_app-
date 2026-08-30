@@ -25,7 +25,7 @@ class HealthArticleCategories extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: AppSpacing.md,
             crossAxisSpacing: AppSpacing.md,
-            childAspectRatio: 1.0,
+            childAspectRatio: 0.82,
           ),
           itemCount: categories.length,
           itemBuilder: (context, index) {

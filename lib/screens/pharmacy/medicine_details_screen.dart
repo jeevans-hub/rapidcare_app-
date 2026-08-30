@@ -33,7 +33,13 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
       _medicineId = args['medicineId'] as String?;
       if (_medicineId != null) {
         _fetchMedicineDetails();
+      } else {
+        _isLoading = false;
+        _errorMessage = 'Medicine was not selected';
       }
+    } else if (args == null && _medicineId == null) {
+      _isLoading = false;
+      _errorMessage = 'Medicine was not selected';
     }
   }
 
@@ -68,8 +74,8 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
     }
   }
 
-  Future<void> _addToCart() async {
-    if (_medicine == null || _isAddingToCart) return;
+  Future<bool> _addToCart() async {
+    if (_medicine == null || _isAddingToCart) return false;
 
     setState(() {
       _isAddingToCart = true;
@@ -91,6 +97,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
             ),
           );
         }
+        return true;
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -100,6 +107,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
             ),
           );
         }
+        return false;
       }
     } catch (e) {
       if (mounted) {
@@ -110,16 +118,19 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
           ),
         );
       }
+      return false;
     } finally {
-      setState(() {
-        _isAddingToCart = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isAddingToCart = false;
+        });
+      }
     }
   }
 
   void _buyNow() {
-    _addToCart().then((_) {
-      if (mounted) {
+    _addToCart().then((added) {
+      if (added && mounted) {
         Navigator.pushNamed(context, AppRoutes.pharmacyCart);
       }
     });

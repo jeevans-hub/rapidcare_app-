@@ -113,16 +113,7 @@ class HealthFirstAidScreen extends StatelessWidget {
                           topic: topic['topic'],
                           description: topic['description'],
                           isEmergency: topic['isEmergency'],
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${topic['topic']}: ${topic['description']} Seek professional emergency medical assistance if needed.',
-                                ),
-                                duration: const Duration(seconds: 3),
-                              ),
-                            );
-                          },
+                          onTap: () => _showTopicDetails(context, topic['topic'] as String),
                         );
                       },
                     );
@@ -202,6 +193,29 @@ class HealthFirstAidScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showTopicDetails(BuildContext context, String topic) {
+    const details = <String, String>{
+      'Minor Cuts': 'Wash your hands, apply gentle pressure with clean gauze to minor bleeding, rinse the area with clean running water, and cover it with a clean dressing. Seek professional care for deep, heavily bleeding, contaminated, or worsening wounds.',
+      'Minor Burns': 'Cool a minor burn with clean, cool running water and protect it with a clean, non-stick covering. Do not use ice, butter, or unverified substances. Seek urgent care for extensive, deep, electrical, chemical, or facial burns.',
+      'Nosebleeds': 'Sit upright, lean slightly forward, and pinch the soft part of the nose continuously for several minutes. Do not tilt the head backward. Seek urgent care if bleeding is severe, follows an injury, or does not stop.',
+      'Sprains': 'Protect the area from further injury and rest it. A wrapped cold pack may help with swelling, and gentle elevation can be comfortable. Seek professional assessment for severe pain, deformity, numbness, or inability to use the limb.',
+      'Fainting': 'Help the person lie down safely and check responsiveness and breathing. Call emergency services if they do not quickly recover, are injured, have breathing problems, or the fainting may be related to a serious condition. Do not give food or drink to an unconscious person.',
+      'Basic CPR Awareness': 'If an adult is unresponsive and not breathing normally, call emergency services and follow the dispatcher instructions. Use an AED if available and trained to do so. This screen is awareness information and does not replace certified CPR training.',
+      'Choking Awareness': 'If a person cannot breathe, speak, or cough effectively, call emergency services and follow the dispatcher instructions. If they can cough forcefully, encourage coughing. Do not put fingers into the mouth unless an object is clearly visible.',
+      'Heat-Related Illness Awareness': 'Move the person to a cooler place and seek professional help for confusion, fainting, seizures, or worsening symptoms. Do not delay emergency care for suspected heat stroke. This information does not replace medical assessment.',
+    };
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(topic),
+        content: SingleChildScrollView(child: Text(details[topic] ?? 'Detailed information is not available for this topic.')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Close')),
+        ],
       ),
     );
   }

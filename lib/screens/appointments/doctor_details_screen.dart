@@ -35,6 +35,9 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       // Use passed data if available (fallback)
       doctor = args;
       isLoading = false;
+    } else if (args == null && doctor == null) {
+      isLoading = false;
+      errorMessage = 'No doctor selected';
     }
   }
 

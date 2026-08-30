@@ -9,6 +9,7 @@ class FirstAidScreen extends StatefulWidget {
 }
 
 class _FirstAidScreenState extends State<FirstAidScreen> {
+  bool _topicApplied = false;
   final Map<String, bool> _expandedCategories = {
     'Heart Attack': false,
     'CPR': false,
@@ -17,6 +18,18 @@ class _FirstAidScreenState extends State<FirstAidScreen> {
     'Bleeding': false,
     'Snake Bite': false,
   };
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_topicApplied) return;
+    _topicApplied = true;
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final topic = args?['topic']?.toString();
+    if (topic != null && _expandedCategories.containsKey(topic)) {
+      _expandedCategories[topic] = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -111,9 +111,11 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
 
       print('[DEBUG] Success response: $result');
 
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
 
       if (result['success'] == true) {
         if (mounted) {
@@ -137,13 +139,15 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
       }
     } catch (e) {
       print('[DEBUG] Caught error: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Unable to connect to the server'),
+            content: Text('Unable to save the record. Check the server connection and try again.'),
             backgroundColor: AppColors.errorRed,
           ),
         );

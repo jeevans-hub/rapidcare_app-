@@ -12,19 +12,14 @@ class HealthArticleDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic>? article =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-    if (article == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Article Details'),
-        ),
-        body: const Center(
-          child: Text('Article information not available'),
-        ),
-      );
-    }
+    final article =
+        (ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?) ??
+        <String, dynamic>{
+          'title': 'Health Education Article',
+          'category': 'General Wellness',
+          'readingTime': '3 min read',
+          'icon': Icons.article,
+        };
 
     return Scaffold(
       appBar: AppBar(
