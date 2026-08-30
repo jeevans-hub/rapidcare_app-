@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../widgets/emergency/emergency_action_dialogs.dart';
 
 class EmergencyContactsScreen extends StatelessWidget {
   const EmergencyContactsScreen({super.key});
@@ -33,24 +34,28 @@ class EmergencyContactsScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               _buildContactCard(
+                context: context,
                 name: 'John Doe',
                 relationship: 'Spouse',
                 phone: '+1 234 567 8900',
               ),
               const SizedBox(height: AppSpacing.sm),
               _buildContactCard(
+                context: context,
                 name: 'Jane Smith',
                 relationship: 'Parent',
                 phone: '+1 234 567 8901',
               ),
               const SizedBox(height: AppSpacing.sm),
               _buildContactCard(
+                context: context,
                 name: 'Mike Johnson',
                 relationship: 'Sibling',
                 phone: '+1 234 567 8902',
               ),
               const SizedBox(height: AppSpacing.sm),
               _buildContactCard(
+                context: context,
                 name: 'Sarah Williams',
                 relationship: 'Friend',
                 phone: '+1 234 567 8903',
@@ -74,6 +79,7 @@ class EmergencyContactsScreen extends StatelessWidget {
   }
 
   Widget _buildContactCard({
+    required BuildContext context,
     required String name,
     required String relationship,
     required String phone,
@@ -129,11 +135,19 @@ class EmergencyContactsScreen extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.edit),
-              onPressed: () {},
+              onPressed: () => EmergencyActionDialogs.showDemoUnavailable(
+                context,
+                'Edit Contact',
+                'Emergency contact management is not connected to a live service in this demo.',
+              ),
             ),
             IconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () {},
+              onPressed: () => EmergencyActionDialogs.showDemoUnavailable(
+                context,
+                'Delete Contact',
+                'Emergency contact management is not connected to a live service in this demo.',
+              ),
             ),
           ],
         ),

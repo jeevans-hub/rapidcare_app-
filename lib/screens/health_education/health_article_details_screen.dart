@@ -172,6 +172,8 @@ class HealthArticleDetailsScreen extends StatelessWidget {
 
   String _getArticleIntroduction(String title) {
     switch (title) {
+      case 'Understanding Balanced Nutrition':
+        return 'Balanced nutrition means including a variety of foods and nutrients across meals. This educational overview explains how food groups and portion awareness can support everyday well-being.';
       case 'Understanding Blood Pressure':
         return 'Blood pressure is the force of blood against the walls of arteries as it circulates through the body. Understanding your blood pressure is essential for cardiovascular health.';
       case 'Importance of Regular Exercise':
@@ -187,6 +189,8 @@ class HealthArticleDetailsScreen extends StatelessWidget {
 
   String _getWhyItMatters(String title) {
     switch (title) {
+      case 'Understanding Balanced Nutrition':
+        return 'Learning about balanced meals can help you make informed food choices that fit your preferences, culture, budget, and health goals.';
       case 'Understanding Blood Pressure':
         return 'High blood pressure can damage arteries, heart, and other organs. Low blood pressure can cause dizziness and fainting. Maintaining healthy blood pressure is crucial for long-term health.';
       case 'Importance of Regular Exercise':
@@ -202,6 +206,14 @@ class HealthArticleDetailsScreen extends StatelessWidget {
 
   List<String> _getHealthyHabits(String title) {
     switch (title) {
+      case 'Understanding Balanced Nutrition':
+        return [
+          'Include a variety of food groups across meals',
+          'Pay attention to hunger and fullness cues',
+          'Choose water regularly throughout the day',
+          'Plan meals around your own needs and preferences',
+          'Use reliable sources for nutrition information',
+        ];
       case 'Understanding Blood Pressure':
         return [
           'Monitor blood pressure regularly',
@@ -247,6 +259,14 @@ class HealthArticleDetailsScreen extends StatelessWidget {
 
   List<String> _getPreventionBasics(String title) {
     switch (title) {
+      case 'Understanding Balanced Nutrition':
+        return [
+          'Avoid relying on a single food or supplement for health',
+          'Read nutrition information when it is useful to you',
+          'Keep meals varied over time',
+          'Ask a qualified professional about personal dietary needs',
+          'Be cautious of restrictive or unverified diet claims',
+        ];
       case 'Understanding Blood Pressure':
         return [
           'Reduce salt intake in your diet',
@@ -292,6 +312,8 @@ class HealthArticleDetailsScreen extends StatelessWidget {
 
   String _getWhenToSeekHelp(String title) {
     switch (title) {
+      case 'Understanding Balanced Nutrition':
+        return 'For personal nutrition concerns, allergies, eating difficulties, or condition-specific dietary needs, consult a qualified healthcare professional or registered dietitian.';
       case 'Understanding Blood Pressure':
         return 'Seek immediate medical attention if you experience severe headache, chest pain, vision problems, or sudden changes in blood pressure readings.';
       case 'Importance of Regular Exercise':

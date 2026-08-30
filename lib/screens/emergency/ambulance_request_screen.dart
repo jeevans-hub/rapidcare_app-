@@ -120,8 +120,11 @@ class _AmbulanceRequestScreenState extends State<AmbulanceRequestScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ambulance Requested'),
-        content: const Text('Your ambulance request has been submitted. Help is on the way.'),
+        title: const Text('Demo Request'),
+        content: const Text(
+          'This is a demo form only. No ambulance request was submitted and '
+          'RapidCare does not dispatch emergency services.',
+        ),
         actions: [
           TextButton(
             onPressed: () {

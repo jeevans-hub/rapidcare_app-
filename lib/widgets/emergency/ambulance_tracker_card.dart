@@ -43,7 +43,7 @@ class AmbulanceTrackerCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        'Searching for nearby ambulance...',
+                        'Live ambulance tracking is not connected in this demo.',
                         style: AppTextStyles.caption,
                       ),
                     ],
@@ -64,7 +64,7 @@ class AmbulanceTrackerCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '-- min',
+                      'Unavailable',
                       style: AppTextStyles.headline.copyWith(
                         color: AppColors.errorRed,
                         fontSize: 28,
@@ -75,7 +75,7 @@ class AmbulanceTrackerCard extends StatelessWidget {
                 const SizedBox(
                   width: 100,
                   child: LinearProgressIndicator(
-                    value: 0.3,
+                  value: 0,
                     backgroundColor: AppColors.textSecondaryGreyLight,
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.errorRed),
                   ),

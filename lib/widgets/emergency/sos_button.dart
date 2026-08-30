@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
+import 'emergency_action_dialogs.dart';
 
 class SOSButton extends StatelessWidget {
   const SOSButton({super.key});
@@ -11,8 +12,8 @@ class SOSButton extends StatelessWidget {
     return Column(
       children: [
         GestureDetector(
-          onTap: () {},
-          onLongPress: () {},
+          onTap: () => EmergencyActionDialogs.showSosConfirmation(context),
+          onLongPress: () => EmergencyActionDialogs.showSosConfirmation(context),
           child: Container(
             width: 120,
             height: 120,

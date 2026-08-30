@@ -178,7 +178,13 @@ class _HealthEducationScreenState extends State<HealthEducationScreen> {
                     Navigator.pushNamed(
                       context,
                       AppRoutes.healthArticleDetails,
-                      arguments: _articles[3],
+                      arguments: {
+                        'title': 'Understanding Balanced Nutrition',
+                        'category': 'Nutrition',
+                        'description': 'Learn about the importance of a balanced diet, portion control, and how different food groups contribute to your overall health and well-being.',
+                        'readingTime': '8 min read',
+                        'icon': Icons.restaurant,
+                      },
                     );
                   },
                 ),
