@@ -1,17 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../core/config/api_config.dart';
 
 class AuthService {
-  // API base URL - platform-specific configuration
-  // For Android emulator, use 10.0.2.2 to reach Windows host
-  // For Windows/Web, use localhost
-  static String get baseUrl {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:5000/api/v1';
-    }
-    return 'http://localhost:5000/api/v1';
-  }
+  static String get baseUrl => ApiConfig.baseUrl;
   
   // Store token in memory (for Phase 27)
   static String? _token;

@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import '../core/config/api_config.dart';
 
 class NotificationService {
-  static String get baseUrl => Platform.isAndroid
-      ? 'http://10.0.2.2:5000/api/v1'
-      : 'http://localhost:5000/api/v1';
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',

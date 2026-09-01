@@ -1,18 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import '../core/config/api_config.dart';
 
 class OrderService {
-  // API base URL - platform-specific configuration
-  // For Android emulator, use 10.0.2.2 to reach Windows host
-  // For Windows/Web, use localhost
-  static String get baseUrl {
-    if (Platform.isAndroid) {
-      return 'http://10.0.2.2:5000/api/v1';
-    }
-    return 'http://localhost:5000/api/v1';
-  }
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // Place order from cart
   static Future<Map<String, dynamic>> placeOrder({
