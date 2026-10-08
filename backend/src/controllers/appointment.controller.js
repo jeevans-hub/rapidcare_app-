@@ -30,7 +30,7 @@ const createAppointment = async (req, res, next) => {
     }
 
     // Validate doctor ID format
-    if (!doctorId.match(/^[0-9a-fA-F]{24}$/)) {
+    if (typeof doctorId !== 'string' || !doctorId.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid doctor ID',

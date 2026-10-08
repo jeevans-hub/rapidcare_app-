@@ -22,7 +22,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && _orderId == null) {
       _orderId = args['orderId'] as String?;
       if (_orderId != null) {
@@ -41,7 +42,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     try {
       final result = await OrderService.getOrderById(_orderId!);
-      
+
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -77,7 +78,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes', style: TextStyle(color: AppColors.errorRed)),
+            child: const Text(
+              'Yes',
+              style: TextStyle(color: AppColors.errorRed),
+            ),
           ),
         ],
       ),
@@ -91,7 +95,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     try {
       final result = await OrderService.cancelOrder(_order!.id);
-      
+
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -137,20 +141,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order Details'),
-      ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: const Text('Order Details')),
+      body: SafeArea(child: _buildBody()),
     );
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_errorMessage != null) {
@@ -160,7 +158,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.errorRed,
+              ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 _errorMessage!,
@@ -179,9 +181,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
 
     if (_order == null) {
-      return const Center(
-        child: Text('Order not found'),
-      );
+      return const Center(child: Text('Order not found'));
     }
 
     return SingleChildScrollView(
@@ -247,7 +247,9 @@ class _OrderHeader extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Placed on ${_formatDate(order.createdAt)}',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondaryGrey,
+              ),
             ),
           ],
         ),
@@ -277,10 +279,7 @@ class _OrderItemsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Order Items',
-              style: AppTextStyles.title,
-            ),
+            Text('Order Items', style: AppTextStyles.title),
             const SizedBox(height: AppSpacing.md),
             ...order.items.map((item) => _OrderItemRow(item: item)),
           ],
@@ -306,14 +305,13 @@ class _OrderItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.nameSnapshot,
-                  style: AppTextStyles.body,
-                ),
+                Text(item.nameSnapshot, style: AppTextStyles.body),
                 const SizedBox(height: 2),
                 Text(
                   'Qty: ${item.quantity}',
-                  style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondaryGrey,
+                  ),
                 ),
               ],
             ),
@@ -345,14 +343,17 @@ class _OrderSummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Order Summary',
-              style: AppTextStyles.title,
-            ),
+            Text('Order Summary', style: AppTextStyles.title),
             const SizedBox(height: AppSpacing.md),
-            _SummaryRow(label: 'Subtotal', value: '\$${order.subtotal.toStringAsFixed(2)}'),
+            _SummaryRow(
+              label: 'Subtotal',
+              value: '\$${order.subtotal.toStringAsFixed(2)}',
+            ),
             const SizedBox(height: AppSpacing.sm),
-            _SummaryRow(label: 'Delivery Fee', value: '\$${order.deliveryFee.toStringAsFixed(2)}'),
+            _SummaryRow(
+              label: 'Delivery Fee',
+              value: '\$${order.deliveryFee.toStringAsFixed(2)}',
+            ),
             const Divider(height: AppSpacing.lg),
             _SummaryRow(
               label: 'Total',
@@ -387,12 +388,11 @@ class _SummaryRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: AppTextStyles.body.copyWith(color: AppColors.textSecondaryGrey),
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textSecondaryGrey,
+          ),
         ),
-        Text(
-          value,
-          style: valueStyle ?? AppTextStyles.body,
-        ),
+        Text(value, style: valueStyle ?? AppTextStyles.body),
       ],
     );
   }
@@ -415,15 +415,18 @@ class _OrderInfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Order Information',
-              style: AppTextStyles.title,
-            ),
+            Text('Order Information', style: AppTextStyles.title),
             const SizedBox(height: AppSpacing.md),
-            _InfoRow(label: 'Payment Method', value: order.paymentMethod.replaceAll('_', ' ').toUpperCase()),
+            _InfoRow(
+              label: 'Payment Method',
+              value: order.paymentMethod.replaceAll('_', ' ').toUpperCase(),
+            ),
             if (order.deliveryAddress != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              _InfoRow(label: 'Delivery Address', value: order.deliveryAddress!),
+              _InfoRow(
+                label: 'Delivery Address',
+                value: order.deliveryAddress!,
+              ),
             ],
           ],
         ),
@@ -445,13 +448,12 @@ class _InfoRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.textSecondaryGrey,
+          ),
         ),
         const SizedBox(height: 2),
-        Text(
-          value,
-          style: AppTextStyles.body,
-        ),
+        Text(value, style: AppTextStyles.body),
       ],
     );
   }
@@ -470,43 +472,46 @@ class _StatusBadge extends StatelessWidget {
 
     switch (status) {
       case 'placed':
-        backgroundColor = AppColors.warningOrange.withOpacity(0.2);
+        backgroundColor = AppColors.warningOrange.withValues(alpha: 0.2);
         textColor = AppColors.warningOrange;
         displayText = 'Placed';
         break;
       case 'confirmed':
-        backgroundColor = AppColors.primaryBlue.withOpacity(0.2);
+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.2);
         textColor = AppColors.primaryBlue;
         displayText = 'Confirmed';
         break;
       case 'packed':
-        backgroundColor = AppColors.primaryBlue.withOpacity(0.2);
+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.2);
         textColor = AppColors.primaryBlue;
         displayText = 'Packed';
         break;
       case 'out_for_delivery':
-        backgroundColor = AppColors.primaryBlue.withOpacity(0.2);
+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.2);
         textColor = AppColors.primaryBlue;
         displayText = 'Out for Delivery';
         break;
       case 'delivered':
-        backgroundColor = AppColors.successGreen.withOpacity(0.2);
+        backgroundColor = AppColors.successGreen.withValues(alpha: 0.2);
         textColor = AppColors.successGreen;
         displayText = 'Delivered';
         break;
       case 'cancelled':
-        backgroundColor = AppColors.errorRed.withOpacity(0.2);
+        backgroundColor = AppColors.errorRed.withValues(alpha: 0.2);
         textColor = AppColors.errorRed;
         displayText = 'Cancelled';
         break;
       default:
-        backgroundColor = AppColors.textSecondaryGrey.withOpacity(0.2);
+        backgroundColor = AppColors.textSecondaryGrey.withValues(alpha: 0.2);
         textColor = AppColors.textSecondaryGrey;
         displayText = status;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.small),

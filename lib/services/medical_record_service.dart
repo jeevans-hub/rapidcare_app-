@@ -18,13 +18,8 @@ class MedicalRecordService {
     String? prescriptionText,
     String? notes,
   }) async {
-    print('[DEBUG SERVICE] baseUrl: $baseUrl');
-    print('[DEBUG SERVICE] Full POST URL: $baseUrl/medical-records');
-    print('[DEBUG SERVICE] Token exists: ${AuthService.token != null}');
-    
     try {
       if (AuthService.token == null) {
-        print('[DEBUG SERVICE] Token is null, returning not authenticated');
         return {'success': false, 'message': 'Not authenticated'};
       }
 
@@ -32,14 +27,18 @@ class MedicalRecordService {
         'title': title,
         'recordType': recordType,
         'recordDate': recordDate,
-        if (doctorName != null && doctorName.isNotEmpty) 'doctorName': doctorName,
-        if (hospitalName != null && hospitalName.isNotEmpty) 'hospitalName': hospitalName,
-        if (description != null && description.isNotEmpty) 'description': description,
-        if (diagnosisText != null && diagnosisText.isNotEmpty) 'diagnosisText': diagnosisText,
-        if (prescriptionText != null && prescriptionText.isNotEmpty) 'prescriptionText': prescriptionText,
+        if (doctorName != null && doctorName.isNotEmpty)
+          'doctorName': doctorName,
+        if (hospitalName != null && hospitalName.isNotEmpty)
+          'hospitalName': hospitalName,
+        if (description != null && description.isNotEmpty)
+          'description': description,
+        if (diagnosisText != null && diagnosisText.isNotEmpty)
+          'diagnosisText': diagnosisText,
+        if (prescriptionText != null && prescriptionText.isNotEmpty)
+          'prescriptionText': prescriptionText,
         if (notes != null && notes.isNotEmpty) 'notes': notes,
       };
-      print('[DEBUG SERVICE] Request body: $requestBody');
 
       final response = await http.post(
         Uri.parse('$baseUrl/medical-records'),
@@ -49,9 +48,6 @@ class MedicalRecordService {
         },
         body: jsonEncode(requestBody),
       );
-
-      print('[DEBUG SERVICE] Response statusCode: ${response.statusCode}');
-      print('[DEBUG SERVICE] Response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -64,11 +60,7 @@ class MedicalRecordService {
         };
       }
     } catch (e) {
-      print('[DEBUG SERVICE] Caught error: $e');
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
@@ -95,7 +87,9 @@ class MedicalRecordService {
         queryParams['search'] = search;
       }
 
-      final uri = Uri.parse('$baseUrl/medical-records').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$baseUrl/medical-records',
+      ).replace(queryParameters: queryParams);
 
       final response = await http.get(
         uri,
@@ -116,15 +110,14 @@ class MedicalRecordService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
   // Get medical record by ID
-  static Future<Map<String, dynamic>> getMedicalRecordById(String recordId) async {
+  static Future<Map<String, dynamic>> getMedicalRecordById(
+    String recordId,
+  ) async {
     try {
       if (AuthService.token == null) {
         return {'success': false, 'message': 'Not authenticated'};
@@ -145,14 +138,12 @@ class MedicalRecordService {
       } else {
         return {
           'success': false,
-          'message': data['message'] ?? 'Failed to fetch medical record details',
+          'message':
+              data['message'] ?? 'Failed to fetch medical record details',
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
@@ -182,13 +173,20 @@ class MedicalRecordService {
         },
         body: jsonEncode({
           if (title != null && title.isNotEmpty) 'title': title,
-          if (recordType != null && recordType.isNotEmpty) 'recordType': recordType,
-          if (doctorName != null && doctorName.isNotEmpty) 'doctorName': doctorName,
-          if (hospitalName != null && hospitalName.isNotEmpty) 'hospitalName': hospitalName,
-          if (recordDate != null && recordDate.isNotEmpty) 'recordDate': recordDate,
-          if (description != null && description.isNotEmpty) 'description': description,
-          if (diagnosisText != null && diagnosisText.isNotEmpty) 'diagnosisText': diagnosisText,
-          if (prescriptionText != null && prescriptionText.isNotEmpty) 'prescriptionText': prescriptionText,
+          if (recordType != null && recordType.isNotEmpty)
+            'recordType': recordType,
+          if (doctorName != null && doctorName.isNotEmpty)
+            'doctorName': doctorName,
+          if (hospitalName != null && hospitalName.isNotEmpty)
+            'hospitalName': hospitalName,
+          if (recordDate != null && recordDate.isNotEmpty)
+            'recordDate': recordDate,
+          if (description != null && description.isNotEmpty)
+            'description': description,
+          if (diagnosisText != null && diagnosisText.isNotEmpty)
+            'diagnosisText': diagnosisText,
+          if (prescriptionText != null && prescriptionText.isNotEmpty)
+            'prescriptionText': prescriptionText,
           if (notes != null && notes.isNotEmpty) 'notes': notes,
         }),
       );
@@ -204,15 +202,14 @@ class MedicalRecordService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
   // Archive medical record
-  static Future<Map<String, dynamic>> archiveMedicalRecord(String recordId) async {
+  static Future<Map<String, dynamic>> archiveMedicalRecord(
+    String recordId,
+  ) async {
     try {
       if (AuthService.token == null) {
         return {'success': false, 'message': 'Not authenticated'};
@@ -237,15 +234,14 @@ class MedicalRecordService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
   // Delete medical record
-  static Future<Map<String, dynamic>> deleteMedicalRecord(String recordId) async {
+  static Future<Map<String, dynamic>> deleteMedicalRecord(
+    String recordId,
+  ) async {
     try {
       if (AuthService.token == null) {
         return {'success': false, 'message': 'Not authenticated'};
@@ -270,10 +266,7 @@ class MedicalRecordService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 }

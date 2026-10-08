@@ -28,7 +28,8 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && _medicineId == null) {
       _medicineId = args['medicineId'] as String?;
       if (_medicineId != null) {
@@ -53,16 +54,19 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
 
     try {
       final result = await MedicineService.getMedicineById(_medicineId!);
-      
+
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
-          _medicine = Medicine.fromJson(data['medicine'] as Map<String, dynamic>);
+          _medicine = Medicine.fromJson(
+            data['medicine'] as Map<String, dynamic>,
+          );
           _isLoading = false;
         });
       } else {
         setState(() {
-          _errorMessage = result['message'] ?? 'Failed to fetch medicine details';
+          _errorMessage =
+              result['message'] ?? 'Failed to fetch medicine details';
           _isLoading = false;
         });
       }
@@ -86,7 +90,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
         medicineId: _medicine!.id,
         quantity: _quantity,
       );
-      
+
       if (result['success'] == true) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -139,20 +143,14 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Medicine Details'),
-      ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: const Text('Medicine Details')),
+      body: SafeArea(child: _buildBody()),
     );
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_errorMessage != null) {
@@ -162,7 +160,11 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.errorRed,
+              ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 _errorMessage!,
@@ -181,9 +183,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
     }
 
     if (_medicine == null) {
-      return const Center(
-        child: Text('Medicine not found'),
-      );
+      return const Center(child: Text('Medicine not found'));
     }
 
     return SingleChildScrollView(
@@ -280,7 +280,8 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                         fontSize: 28,
                       ),
                     ),
-                    if (_medicine!.mrp != null && _medicine!.mrp! > _medicine!.price) ...[
+                    if (_medicine!.mrp != null &&
+                        _medicine!.mrp! > _medicine!.price) ...[
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         '\$${_medicine!.mrp!.toStringAsFixed(2)}',
@@ -297,13 +298,17 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.sm),
                     decoration: BoxDecoration(
-                      color: AppColors.warningOrange.withOpacity(0.2),
+                      color: AppColors.warningOrange.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.small),
                       border: Border.all(color: AppColors.warningOrange),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.warning, color: AppColors.warningOrange, size: 16),
+                        const Icon(
+                          Icons.warning,
+                          color: AppColors.warningOrange,
+                          size: 16,
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
                           'Prescription Required',
@@ -315,14 +320,13 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                       ],
                     ),
                   ),
-                if (_medicine!.requiresPrescription) const SizedBox(height: AppSpacing.lg),
-                if (_medicine!.description != null && _medicine!.description!.isNotEmpty) ...[
+                if (_medicine!.requiresPrescription)
+                  const SizedBox(height: AppSpacing.lg),
+                if (_medicine!.description != null &&
+                    _medicine!.description!.isNotEmpty) ...[
                   const SectionTitle(title: 'Description'),
                   const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    _medicine!.description!,
-                    style: AppTextStyles.body,
-                  ),
+                  Text(_medicine!.description!, style: AppTextStyles.body),
                   const SizedBox(height: AppSpacing.lg),
                 ],
                 const SectionTitle(title: 'Safety Information'),
@@ -352,10 +356,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                           : null,
                       icon: const Icon(Icons.remove_circle_outline),
                     ),
-                    Text(
-                      '$_quantity',
-                      style: AppTextStyles.title,
-                    ),
+                    Text('$_quantity', style: AppTextStyles.title),
                     IconButton(
                       onPressed: _quantity < (_medicine!.stock)
                           ? () => setState(() => _quantity++)
@@ -366,7 +367,9 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                     if (!_medicine!.isQuantityAvailable(_quantity))
                       Text(
                         'Only ${_medicine!.stock} available',
-                        style: AppTextStyles.caption.copyWith(color: AppColors.errorRed),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.errorRed,
+                        ),
                       ),
                   ],
                 ),
@@ -375,7 +378,9 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _isAddingToCart || !_medicine!.isQuantityAvailable(_quantity)
+                        onPressed:
+                            _isAddingToCart ||
+                                !_medicine!.isQuantityAvailable(_quantity)
                             ? null
                             : _addToCart,
                         style: OutlinedButton.styleFrom(
@@ -384,23 +389,29 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                             vertical: 16,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.medium),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.medium,
+                            ),
                           ),
                         ),
                         child: _isAddingToCart
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Add to Cart'),
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Add to Cart'),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: PrimaryButton(
                         text: 'Buy Now',
-                        onPressed: _isAddingToCart || !_medicine!.isQuantityAvailable(_quantity)
+                        onPressed:
+                            _isAddingToCart ||
+                                !_medicine!.isQuantityAvailable(_quantity)
                             ? null
                             : () => _buyNow(),
                       ),

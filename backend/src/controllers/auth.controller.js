@@ -12,32 +12,42 @@ const generateToken = (userId) => {
 // Register
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, phone, dateOfBirth } = req.body;
+    const { name, email, password, phone, dateOfBirth } = req.body || {};
 
     // Validation
-    if (!name || name.trim() === '') {
+    if (typeof name !== 'string' || name.trim() === '') {
       return res.status(400).json({
         success: false,
         message: 'Name is required',
       });
     }
 
-    if (!email || email.trim() === '') {
+    if (typeof email !== 'string' || email.trim() === '') {
       return res.status(400).json({
         success: false,
         message: 'Email is required',
       });
     }
 
-    if (!password || password.length < 6) {
+    if (typeof password !== 'string' || password.length < 6) {
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters',
       });
     }
 
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid email' });
+    }
+    if (phone != null && typeof phone !== 'string') {
+      return res.status(400).json({ success: false, message: 'Phone must be a string' });
+    }
+    if (dateOfBirth != null && (typeof dateOfBirth !== 'string' || !dateOfBirth.trim() || Number.isNaN(Date.parse(dateOfBirth)))) {
+      return res.status(400).json({ success: false, message: 'Invalid date of birth' });
+    }
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -81,17 +91,17 @@ const register = async (req, res, next) => {
 // Login
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
 
     // Validation
-    if (!email || email.trim() === '') {
+    if (typeof email !== 'string' || email.trim() === '') {
       return res.status(400).json({
         success: false,
         message: 'Email is required',
       });
     }
 
-    if (!password) {
+    if (typeof password !== 'string' || !password) {
       return res.status(400).json({
         success: false,
         message: 'Password is required',
@@ -99,7 +109,7 @@ const login = async (req, res, next) => {
     }
 
     // Find user with password
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
 
     if (!user) {
       return res.status(401).json({

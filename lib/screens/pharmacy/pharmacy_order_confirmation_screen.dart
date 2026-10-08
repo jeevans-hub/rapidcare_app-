@@ -12,10 +12,12 @@ class PharmacyOrderConfirmationScreen extends StatefulWidget {
   const PharmacyOrderConfirmationScreen({super.key});
 
   @override
-  State<PharmacyOrderConfirmationScreen> createState() => _PharmacyOrderConfirmationScreenState();
+  State<PharmacyOrderConfirmationScreen> createState() =>
+      _PharmacyOrderConfirmationScreenState();
 }
 
-class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmationScreen> {
+class _PharmacyOrderConfirmationScreenState
+    extends State<PharmacyOrderConfirmationScreen> {
   Order? _order;
   bool _isLoading = true;
   String? _errorMessage;
@@ -24,7 +26,8 @@ class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmat
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && _order == null && !_isPlacingOrder) {
       _placeOrder();
     }
@@ -39,7 +42,7 @@ class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmat
 
     try {
       final result = await OrderService.placeOrder();
-      
+
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -66,12 +69,8 @@ class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order Confirmation'),
-      ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: const Text('Order Confirmation')),
+      body: SafeArea(child: _buildBody()),
     );
   }
 
@@ -96,7 +95,11 @@ class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmat
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.errorRed,
+              ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 _errorMessage!,
@@ -120,9 +123,7 @@ class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmat
     }
 
     if (_order == null) {
-      return const Center(
-        child: Text('Order not found'),
-      );
+      return const Center(child: Text('Order not found'));
     }
 
     return SingleChildScrollView(
@@ -135,7 +136,7 @@ class _PharmacyOrderConfirmationScreenState extends State<PharmacyOrderConfirmat
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.successGreen.withOpacity(0.2),
+                color: AppColors.successGreen.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -228,31 +229,36 @@ class _OrderDetailCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _DetailRow(label: 'Order ID', value: '#${order.id.substring(0, 8).toUpperCase()}'),
+            _DetailRow(
+              label: 'Order ID',
+              value: '#${order.id.substring(0, 8).toUpperCase()}',
+            ),
             const SizedBox(height: AppSpacing.sm),
             _DetailRow(label: 'Estimated Delivery', value: '2-3 business days'),
             if (order.deliveryAddress != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              _DetailRow(label: 'Delivery Address', value: order.deliveryAddress!),
+              _DetailRow(
+                label: 'Delivery Address',
+                value: order.deliveryAddress!,
+              ),
             ],
             const SizedBox(height: AppSpacing.md),
             const Divider(),
             const SizedBox(height: AppSpacing.md),
             const Text(
               'Ordered Items:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSpacing.sm),
-            ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Text(
-                    '${item.nameSnapshot} x ${item.quantity}',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                )),
+            ...order.items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Text(
+                  '${item.nameSnapshot} x ${item.quantity}',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
             const SizedBox(height: AppSpacing.md),
             const Divider(),
             const SizedBox(height: AppSpacing.md),
@@ -261,10 +267,7 @@ class _OrderDetailCard extends StatelessWidget {
               children: [
                 const Text(
                   'Total Amount',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '\$${order.totalAmount.toStringAsFixed(2)}',
@@ -304,10 +307,7 @@ class _DetailRow extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ],
     );

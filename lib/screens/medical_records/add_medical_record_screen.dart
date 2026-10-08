@@ -4,7 +4,6 @@ import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../services/medical_record_service.dart';
-import '../../services/auth_service.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../widgets/primary_button.dart';
 
@@ -30,9 +29,17 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _recordTypes = [
-    {'value': 'consultation', 'label': 'Consultation', 'icon': Icons.local_hospital},
+    {
+      'value': 'consultation',
+      'label': 'Consultation',
+      'icon': Icons.local_hospital,
+    },
     {'value': 'lab_report', 'label': 'Lab Report', 'icon': Icons.biotech},
-    {'value': 'prescription', 'label': 'Prescription', 'icon': Icons.medication},
+    {
+      'value': 'prescription',
+      'label': 'Prescription',
+      'icon': Icons.medication,
+    },
     {'value': 'vaccination', 'label': 'Vaccination', 'icon': Icons.vaccines},
     {'value': 'surgery', 'label': 'Surgery', 'icon': Icons.medical_services},
     {'value': 'allergy', 'label': 'Allergy', 'icon': Icons.warning},
@@ -66,50 +73,38 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   }
 
   Future<void> _saveMedicalRecord() async {
-    print('[DEBUG] Save button tapped');
-    
     if (!_formKey.currentState!.validate()) {
-      print('[DEBUG] Form validation failed');
       return;
     }
-    print('[DEBUG] Form validation passed');
-
-    print('[DEBUG] Selected recordType: $_selectedRecordType');
-    print('[DEBUG] Selected recordDate: ${_selectedDate.toIso8601String().split('T')[0]}');
-    print('[DEBUG] Title value: ${_titleController.text.trim()}');
-    print('[DEBUG] AuthService.token exists: ${AuthService.token != null}');
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final requestBody = {
-        'title': _titleController.text.trim(),
-        'recordType': _selectedRecordType,
-        'recordDate': _selectedDate.toIso8601String().split('T')[0],
-        'doctorName': _doctorNameController.text.trim().isEmpty ? null : _doctorNameController.text.trim(),
-        'hospitalName': _hospitalNameController.text.trim().isEmpty ? null : _hospitalNameController.text.trim(),
-        'description': _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        'diagnosisText': _diagnosisTextController.text.trim().isEmpty ? null : _diagnosisTextController.text.trim(),
-        'prescriptionText': _prescriptionTextController.text.trim().isEmpty ? null : _prescriptionTextController.text.trim(),
-        'notes': _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-      };
-      print('[DEBUG] Request body: $requestBody');
-
       final result = await MedicalRecordService.createMedicalRecord(
         title: _titleController.text.trim(),
         recordType: _selectedRecordType,
         recordDate: _selectedDate.toIso8601String().split('T')[0],
-        doctorName: _doctorNameController.text.trim().isEmpty ? null : _doctorNameController.text.trim(),
-        hospitalName: _hospitalNameController.text.trim().isEmpty ? null : _hospitalNameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        diagnosisText: _diagnosisTextController.text.trim().isEmpty ? null : _diagnosisTextController.text.trim(),
-        prescriptionText: _prescriptionTextController.text.trim().isEmpty ? null : _prescriptionTextController.text.trim(),
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        doctorName: _doctorNameController.text.trim().isEmpty
+            ? null
+            : _doctorNameController.text.trim(),
+        hospitalName: _hospitalNameController.text.trim().isEmpty
+            ? null
+            : _hospitalNameController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        diagnosisText: _diagnosisTextController.text.trim().isEmpty
+            ? null
+            : _diagnosisTextController.text.trim(),
+        prescriptionText: _prescriptionTextController.text.trim().isEmpty
+            ? null
+            : _prescriptionTextController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
       );
-
-      print('[DEBUG] Success response: $result');
 
       if (mounted) {
         setState(() {
@@ -131,14 +126,15 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Failed to save medical record'),
+              content: Text(
+                result['message'] ?? 'Failed to save medical record',
+              ),
               backgroundColor: AppColors.errorRed,
             ),
           );
         }
       }
     } catch (e) {
-      print('[DEBUG] Caught error: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -147,7 +143,9 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Unable to save the record. Check the server connection and try again.'),
+            content: Text(
+              'Unable to save the record. Check the server connection and try again.',
+            ),
             backgroundColor: AppColors.errorRed,
           ),
         );
@@ -158,9 +156,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Medical Record'),
-      ),
+      appBar: AppBar(title: const Text('Add Medical Record')),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -171,10 +167,7 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: AppSpacing.md),
-                  const Text(
-                    'Record Type',
-                    style: AppTextStyles.body,
-                  ),
+                  const Text('Record Type', style: AppTextStyles.body),
                   const SizedBox(height: AppSpacing.sm),
                   Wrap(
                     spacing: AppSpacing.sm,
@@ -197,7 +190,9 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                             color: isSelected
                                 ? AppColors.primaryBlue
                                 : AppColors.surfaceWhite,
-                            borderRadius: BorderRadius.circular(AppRadius.medium),
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.medium,
+                            ),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.primaryBlue
@@ -248,12 +243,17 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.backgroundLightGreyDark),
+                        border: Border.all(
+                          color: AppColors.backgroundLightGreyDark,
+                        ),
                         borderRadius: BorderRadius.circular(AppRadius.medium),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today, color: AppColors.textSecondaryGrey),
+                          const Icon(
+                            Icons.calendar_today,
+                            color: AppColors.textSecondaryGrey,
+                          ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Text(
@@ -261,7 +261,10 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                               style: AppTextStyles.body,
                             ),
                           ),
-                          const Icon(Icons.chevron_right, color: AppColors.textSecondaryGrey),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.textSecondaryGrey,
+                          ),
                         ],
                       ),
                     ),
@@ -333,7 +336,11 @@ class _AddMedicalRecordScreenState extends State<AddMedicalRecordScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.info_outline, color: AppColors.warningOrange, size: 20),
+                              Icon(
+                                Icons.info_outline,
+                                color: AppColors.warningOrange,
+                                size: 20,
+                              ),
                               const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(

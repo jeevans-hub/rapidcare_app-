@@ -41,10 +41,11 @@ const appointmentSchema = new mongoose.Schema({
 
 // Compound index to prevent duplicate appointments for same doctor at same date and time
 appointmentSchema.index(
-  { doctor: 1, appointmentDate: 1, timeSlot: 1, status: 1 },
+  { doctor: 1, appointmentDate: 1, timeSlot: 1 },
   { 
-    name: 'unique_appointment_slot',
-    partialFilterExpression: { status: { $ne: 'cancelled' } }
+    name: 'unique_active_appointment_slot',
+    unique: true,
+    partialFilterExpression: { status: { $in: ['scheduled', 'completed'] } }
   }
 );
 

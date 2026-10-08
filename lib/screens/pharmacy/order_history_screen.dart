@@ -33,12 +33,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
     try {
       final result = await OrderService.getOrders();
-      
+
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         final ordersList = data['orders'] as List<dynamic>? ?? [];
         setState(() {
-          _orders = ordersList.map((json) => Order.fromJson(json as Map<String, dynamic>)).toList();
+          _orders = ordersList
+              .map((json) => Order.fromJson(json as Map<String, dynamic>))
+              .toList();
           _isLoading = false;
         });
       } else {
@@ -58,20 +60,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Orders'),
-      ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      appBar: AppBar(title: const Text('My Orders')),
+      body: SafeArea(child: _buildBody()),
     );
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_errorMessage != null) {
@@ -81,7 +77,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.errorRed,
+              ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 _errorMessage!,
@@ -106,16 +106,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.shopping_bag_outlined, size: 64, color: AppColors.textSecondaryGrey),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'No orders yet',
-                style: AppTextStyles.body,
+              const Icon(
+                Icons.shopping_bag_outlined,
+                size: 64,
+                color: AppColors.textSecondaryGrey,
               ),
+              const SizedBox(height: AppSpacing.md),
+              Text('No orders yet', style: AppTextStyles.body),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Start shopping to see your orders here',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondaryGrey,
+                ),
               ),
             ],
           ),
@@ -128,7 +131,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       child: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.lg),
         itemCount: _orders.length,
-        separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: AppSpacing.md),
         itemBuilder: (context, index) {
           final order = _orders[index];
           return _OrderCard(
@@ -151,10 +155,7 @@ class _OrderCard extends StatelessWidget {
   final Order order;
   final VoidCallback onTap;
 
-  const _OrderCard({
-    required this.order,
-    required this.onTap,
-  });
+  const _OrderCard({required this.order, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +185,9 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 '${order.itemCount} item${order.itemCount > 1 ? 's' : ''}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondaryGrey,
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
@@ -197,7 +200,9 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 _formatDate(order.createdAt),
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondaryGrey,
+                ),
               ),
             ],
           ),
@@ -224,43 +229,46 @@ class _StatusBadge extends StatelessWidget {
 
     switch (status) {
       case 'placed':
-        backgroundColor = AppColors.warningOrange.withOpacity(0.2);
+        backgroundColor = AppColors.warningOrange.withValues(alpha: 0.2);
         textColor = AppColors.warningOrange;
         displayText = 'Placed';
         break;
       case 'confirmed':
-        backgroundColor = AppColors.primaryBlue.withOpacity(0.2);
+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.2);
         textColor = AppColors.primaryBlue;
         displayText = 'Confirmed';
         break;
       case 'packed':
-        backgroundColor = AppColors.primaryBlue.withOpacity(0.2);
+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.2);
         textColor = AppColors.primaryBlue;
         displayText = 'Packed';
         break;
       case 'out_for_delivery':
-        backgroundColor = AppColors.primaryBlue.withOpacity(0.2);
+        backgroundColor = AppColors.primaryBlue.withValues(alpha: 0.2);
         textColor = AppColors.primaryBlue;
         displayText = 'Out for Delivery';
         break;
       case 'delivered':
-        backgroundColor = AppColors.successGreen.withOpacity(0.2);
+        backgroundColor = AppColors.successGreen.withValues(alpha: 0.2);
         textColor = AppColors.successGreen;
         displayText = 'Delivered';
         break;
       case 'cancelled':
-        backgroundColor = AppColors.errorRed.withOpacity(0.2);
+        backgroundColor = AppColors.errorRed.withValues(alpha: 0.2);
         textColor = AppColors.errorRed;
         displayText = 'Cancelled';
         break;
       default:
-        backgroundColor = AppColors.textSecondaryGrey.withOpacity(0.2);
+        backgroundColor = AppColors.textSecondaryGrey.withValues(alpha: 0.2);
         textColor = AppColors.textSecondaryGrey;
         displayText = status;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.small),

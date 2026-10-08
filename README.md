@@ -31,8 +31,8 @@ API_OVERVIEW.md      Backend endpoint overview
 ## Prerequisites
 
 - Flutter SDK compatible with the project SDK constraint
-- Node.js 14+
-- MongoDB local instance or MongoDB Atlas database
+- Node.js 20.19+
+- MongoDB 6.0+ replica set or MongoDB Atlas database
 
 ## Setup
 
@@ -83,3 +83,22 @@ Doctor and medicine catalog entries are seeded demo data. Backend-connected user
 ## Portfolio note
 
 This repository is suitable as a portfolio/college project demonstration. Configure private environment variables locally and review the known limitations before production use.
+
+## Release API configuration
+
+Set a reachable HTTPS backend URL when building for a device or release:
+
+```bash
+flutter build apk --dart-define=API_BASE_URL=https://your-api.example.com/api/v1
+```
+
+Use the same `--dart-define` with other Flutter build/run commands. Without an override, development uses the Android emulator host alias or localhost. Android permits HTTP only in debug builds; release builds require HTTPS. Android internet permission and macOS outgoing-network entitlements are configured.
+
+## Backend regression tests
+
+```bash
+cd backend
+npm test
+```
+
+The tests use a disposable local MongoDB replica set. See `backend/README.md` for transaction requirements and local setup.

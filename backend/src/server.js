@@ -2,11 +2,15 @@ const app = require('./app');
 const config = require('./config/env');
 const { connectDatabase, disconnectDatabase } = require('./config/database');
 const seedMedicines = require('./seed/medicineSeed');
+const Appointment = require('./models/Appointment');
 
 const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDatabase();
+
+    // Do not accept bookings until the unique slot index has been created.
+    await Appointment.init();
 
     // Seed medicines (idempotent - only if none exist)
     await seedMedicines();

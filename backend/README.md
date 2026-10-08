@@ -8,8 +8,8 @@ This backend provides the REST API foundation for the RapidCare Flutter applicat
 
 ## Prerequisites
 
-- Node.js (v14 or higher recommended)
-- MongoDB (v4.4 or higher recommended)
+- Node.js 20.19 or higher
+- MongoDB 6.0 or higher, configured as a replica set (or MongoDB Atlas)
 - npm or yarn
 
 ## Installation
@@ -35,7 +35,7 @@ This backend provides the REST API foundation for the RapidCare Flutter applicat
    ```
    NODE_ENV=development
    PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/rapidcare
+   MONGODB_URI=mongodb://localhost:27017/rapidcare?replicaSet=rs0
    API_PREFIX=/api/v1
    JWT_SECRET=replace-with-a-local-secret
    JWT_EXPIRES_IN=7d
@@ -52,14 +52,20 @@ This backend provides the REST API foundation for the RapidCare Flutter applicat
 
 ### Local MongoDB
 
-Ensure MongoDB is running locally:
-```bash
-# On Windows
-mongod
+Order placement and cancellation use transactions, so a standalone MongoDB server is insufficient. For a new local development instance, create a data directory and start a single-node replica set:
 
-# On macOS/Linux
-sudo systemctl start mongod
+```powershell
+New-Item -ItemType Directory -Force .\data
+mongod --dbpath .\data --replSet rs0 --bind_ip localhost
 ```
+
+In a second terminal, initialize it once:
+
+```bash
+mongosh --eval 'rs.initiate()'
+```
+
+Use `mongodb://localhost:27017/rapidcare?replicaSet=rs0` as `MONGODB_URI`. Existing standalone installations must be configured as a replica set before using checkout. MongoDB Atlas already supports transactions.
 
 ### MongoDB Atlas
 
@@ -75,7 +81,7 @@ Start the development server with auto-reload:
 npm run dev
 ```
 
-This uses nodemon to automatically restart the server when files change.
+This uses Node.js's built-in watch mode to restart the server when imported files change.
 
 ## Production
 
@@ -180,3 +186,13 @@ Try clearing npm cache:
 npm cache clean --force
 npm install
 ```
+
+## Regression tests
+
+Run `npm test` with Node.js 20.19+. The suite creates and stops a disposable local MongoDB replica set and does not use your configured database. On its first run, the test dependency downloads MongoDB; internet access and permission to start a local process are required.
+
+Tests cover malformed authentication data, email normalization, concurrent checkouts, transaction rollback, concurrent cancellation, order ownership, and unique appointment slots.
+
+## Existing appointment data
+
+Startup waits for the `unique_active_appointment_slot` index. MongoDB 6.0+ is required for its partial filter. If existing scheduled/completed appointments share a doctor, date, and time slot, startup fails instead of accepting unsafe bookings. Review those records and cancel or reschedule duplicates before restarting; no records are automatically removed. The previous non-unique index may remain without weakening the new constraint.

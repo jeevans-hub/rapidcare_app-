@@ -3,85 +3,63 @@ const Cart = require('../models/Cart');
 const Medicine = require('../models/Medicine');
 const mongoose = require('mongoose');
 
-// Place order from cart
+const requestError = (statusCode, message) => Object.assign(new Error(message), { statusCode });
+
+// Commit the order, inventory changes, and cart clearing together. MongoDB retries
+// write conflicts, so a competing checkout sees the updated stock/cart on retry.
 const placeOrder = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { deliveryAddress, notes } = req.body;
-
-    // Get user's cart
-    const cart = await Cart.findOne({ user: userId }).populate('items.medicine');
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cart is empty',
-      });
-    }
-
-    // Validate stock for all items
-    for (const item of cart.items) {
-      if (!item.medicine || !item.medicine.isAvailable) {
-        return res.status(400).json({
-          success: false,
-          message: 'One or more medicines are not available',
-        });
+    const order = await mongoose.connection.transaction(async (session) => {
+      const cart = await Cart.findOne({ user: userId }).session(session).populate('items.medicine');
+      if (!cart || cart.items.length === 0) {
+        throw requestError(400, 'Cart is empty');
       }
-      if (item.medicine.stock < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${item.medicine.name}`,
-        });
+
+      for (const item of cart.items) {
+        if (!item.medicine || !item.medicine.isAvailable) {
+          throw requestError(400, 'One or more medicines are not available');
+        }
+        if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+          throw requestError(400, 'Quantity must be a positive integer');
+        }
+        const reserved = await Medicine.updateOne(
+          { _id: item.medicine._id, isAvailable: true, stock: { $gte: item.quantity } },
+          { $inc: { stock: -item.quantity } },
+          { session }
+        );
+        if (reserved.modifiedCount !== 1) {
+          throw requestError(409, 'Insufficient stock for ' + item.medicine.name);
+        }
       }
-    }
 
-    // Calculate subtotal
-    const subtotal = cart.items.reduce(
-      (sum, item) => sum + (item.priceAtAdd * item.quantity),
-      0
-    );
+      const subtotal = cart.items.reduce((sum, item) => sum + item.priceAtAdd * item.quantity, 0);
+      const deliveryFee = 2.99;
+      const [createdOrder] = await Order.create([{
+        user: userId,
+        items: cart.items.map(item => ({
+          medicine: item.medicine._id,
+          nameSnapshot: item.medicine.name,
+          priceSnapshot: item.priceAtAdd,
+          quantity: item.quantity,
+        })),
+        subtotal,
+        deliveryFee,
+        totalAmount: subtotal + deliveryFee,
+        status: 'placed',
+        deliveryAddress: deliveryAddress || null,
+        paymentMethod: 'cash_on_delivery',
+        notes: notes || null,
+      }], { session });
 
-    const deliveryFee = 2.99;
-    const totalAmount = subtotal + deliveryFee;
-
-    // Create order items with snapshots
-    const orderItems = cart.items.map(item => ({
-      medicine: item.medicine._id,
-      nameSnapshot: item.medicine.name,
-      priceSnapshot: item.priceAtAdd,
-      quantity: item.quantity,
-    }));
-
-    // Create order
-    const order = await Order.create({
-      user: userId,
-      items: orderItems,
-      subtotal,
-      deliveryFee,
-      totalAmount,
-      status: 'placed',
-      deliveryAddress: deliveryAddress || null,
-      paymentMethod: 'cash_on_delivery',
-      notes: notes || null,
+      cart.items = [];
+      await cart.save({ session });
+      await createdOrder.populate('items.medicine');
+      return createdOrder;
     });
 
-    // Reduce stock
-    for (const item of cart.items) {
-      await Medicine.findByIdAndUpdate(item.medicine._id, {
-        $inc: { stock: -item.quantity },
-      });
-    }
-
-    // Clear cart
-    cart.items = [];
-    await cart.save();
-
-    await order.populate('items.medicine');
-
-    res.status(201).json({
-      success: true,
-      message: 'Order placed successfully',
-      data: { order },
-    });
+    res.status(201).json({ success: true, message: 'Order placed successfully', data: { order } });
   } catch (error) {
     next(error);
   }
@@ -167,43 +145,26 @@ const cancelOrder = async (req, res, next) => {
       });
     }
 
-    const order = await Order.findById(id);
+    const order = await mongoose.connection.transaction(async (session) => {
+      const currentOrder = await Order.findById(id).session(session);
+      if (!currentOrder) throw requestError(404, 'Order not found');
+      if (currentOrder.user.toString() !== userId) throw requestError(403, 'Access denied');
+      if (['cancelled', 'delivered'].includes(currentOrder.status)) {
+        throw requestError(400, 'Order cannot be cancelled');
+      }
 
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found',
-      });
-    }
-
-    // Check ownership
-    if (order.user.toString() !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied',
-      });
-    }
-
-    // Check if order can be cancelled
-    if (order.status === 'cancelled' || order.status === 'delivered') {
-      return res.status(400).json({
-        success: false,
-        message: 'Order cannot be cancelled',
-      });
-    }
-
-    // Update status
-    order.status = 'cancelled';
-    await order.save();
-
-    // Restore stock
-    for (const item of order.items) {
-      await Medicine.findByIdAndUpdate(item.medicine, {
-        $inc: { stock: item.quantity },
-      });
-    }
-
-    await order.populate('items.medicine');
+      currentOrder.status = 'cancelled';
+      await currentOrder.save({ session });
+      for (const item of currentOrder.items) {
+        await Medicine.updateOne(
+          { _id: item.medicine },
+          { $inc: { stock: item.quantity } },
+          { session }
+        );
+      }
+      await currentOrder.populate('items.medicine');
+      return currentOrder;
+    });
 
     res.status(200).json({
       success: true,

@@ -11,6 +11,10 @@ const connectDatabase = async () => {
 
   try {
     await mongoose.connect(config.mongodbUri);
+    const topology = await mongoose.connection.db.admin().command({ hello: 1 });
+    if (!topology.setName && topology.msg !== 'isdbgrid') {
+      throw new Error('Transactions require a MongoDB replica set or Atlas. See backend/README.md for local setup.');
+    }
     isConnected = true;
     console.log('MongoDB connected successfully');
   } catch (error) {
