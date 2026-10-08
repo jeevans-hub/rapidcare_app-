@@ -168,3 +168,53 @@ test('the database rejects duplicate active slots even when writes bypass the co
   await assert.rejects(Appointment.create({ ...slot, user: users[1].id }), error => error.code === 11000);
   await Appointment.create({ ...slot, status: 'cancelled' });
 });
+
+test('doctor list and details expose the same MongoDB identity', async () => {
+  const clinician = await doctor();
+  const list = await request('/doctors', { method: 'GET' });
+  assert.equal(list.status, 200);
+  assert.equal(list.body.data.doctors[0]._id, clinician.id);
+  const details = await request(`/doctors/${list.body.data.doctors[0]._id}`, { method: 'GET' });
+  assert.equal(details.status, 200);
+  assert.equal(details.body.data.doctor._id, clinician.id);
+  assert.deepEqual(details.body.data.doctor.availableSlots, list.body.data.doctors[0].availableSlots);
+  assert.equal((await request('/doctors/invalid', { method: 'GET' })).status, 400);
+  assert.equal((await request(`/doctors/${new mongoose.Types.ObjectId()}`, { method: 'GET' })).status, 404);
+});
+
+test('invalid booking requests are rejected without persisting appointments', async () => {
+  const clinician = await doctor();
+  const valid = { doctorId: clinician.id, appointmentDate: '2030-01-15', timeSlot: '09:00 AM' };
+  for (const body of [
+    {}, { ...valid, doctorId: '' }, { ...valid, doctorId: 123 },
+    { ...valid, appointmentDate: '2020-01-01' }, { ...valid, appointmentDate: 'not-a-date' },
+    { ...valid, appointmentDate: ['2030-01-15'] }, { ...valid, appointmentDate: '2030-02-30' },
+    { ...valid, timeSlot: '' }, { ...valid, timeSlot: {} }, { ...valid, timeSlot: '99:99 AM' },
+    { ...valid, reason: {} },
+  ]) {
+    assert.equal((await request('/appointments', { user: users[0], body })).status, 400);
+  }
+  assert.equal((await request('/appointments', { body: valid })).status, 401);
+  assert.equal(await Appointment.countDocuments(), 0);
+});
+
+test('booking persists the selected doctor and day, and history is scoped to its owner', async () => {
+  const clinician = await doctor();
+  const body = { doctorId: clinician.id, appointmentDate: '2030-01-15', timeSlot: '09:00 AM' };
+  const created = await request('/appointments', { user: users[0], body });
+  assert.equal(created.status, 201);
+  const id = created.body.data.appointment._id;
+  assert.equal(created.body.data.appointment.doctor._id, clinician.id);
+  const persisted = await Appointment.findById(id);
+  assert.equal(persisted.user.toString(), users[0].id);
+  assert.equal(persisted.doctor.toString(), clinician.id);
+  assert.equal(persisted.appointmentDate.getDate(), 15);
+  const ownHistory = await request('/appointments', { user: users[0], method: 'GET' });
+  assert.equal(ownHistory.status, 200);
+  assert.equal(ownHistory.body.data.appointments[0]._id, id);
+  const otherHistory = await request('/appointments', { user: users[1], method: 'GET' });
+  assert.deepEqual(otherHistory.body.data.appointments, []);
+  assert.equal((await request(`/appointments/${id}`, { user: users[1], method: 'GET' })).status, 404);
+  assert.equal((await request('/appointments', { user: users[0], body })).status, 409);
+  assert.equal((await request(`/appointments/${id}/reschedule`, { user: users[0], method: 'PATCH', body: { appointmentDate: [], timeSlot: '09:00 AM' } })).status, 400);
+});

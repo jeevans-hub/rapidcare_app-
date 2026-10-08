@@ -10,12 +10,15 @@ class AppointmentConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     final appointment = args?['appointment'];
     final doctor = args?['doctor'];
 
-    final doctorName = doctor?['doctorName'] ?? appointment?['doctor']?['name'] ?? 'Doctor';
-    final hospital = doctor?['hospital'] ?? appointment?['doctor']?['hospital'] ?? '';
+    final doctorName =
+        doctor?['doctorName'] ?? appointment?['doctor']?['name'] ?? 'Doctor';
+    final hospital =
+        doctor?['hospital'] ?? appointment?['doctor']?['hospital'] ?? '';
     final appointmentDate = appointment?['appointmentDate'];
     final timeSlot = appointment?['timeSlot'] ?? '';
     final appointmentId = appointment?['_id']?.toString() ?? '';
@@ -44,10 +47,7 @@ class AppointmentConfirmationScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xl),
               const Text(
                 'Appointment Confirmed!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -119,7 +119,10 @@ class AppointmentConfirmationScreen extends StatelessWidget {
               PrimaryButton(
                 text: 'View My Appointments',
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, AppRoutes.appointmentScreen);
+                  Navigator.pushReplacementNamed(
+                    context,
+                    AppRoutes.appointments,
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -140,7 +143,7 @@ class AppointmentConfirmationScreen extends StatelessWidget {
   String _formatDate(dynamic date) {
     if (date == null) return '';
     try {
-      final dateTime = DateTime.parse(date.toString());
+      final dateTime = DateTime.parse(date.toString()).toLocal();
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     } catch (e) {
       return date.toString();
@@ -182,7 +185,9 @@ class _ConfirmationRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              color: isBold ? AppColors.primaryBlue : AppColors.textPrimaryDarkGrey,
+              color: isBold
+                  ? AppColors.primaryBlue
+                  : AppColors.textPrimaryDarkGrey,
             ),
           ),
         ),

@@ -12,15 +12,25 @@ class QuickActionsGrid extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final crossAxisCount = constraints.maxWidth > 600 ? 3 : 3;
-          
+          final textScale = MediaQuery.textScalerOf(context).scale(12) / 12;
+          final crossAxisCount =
+              ((constraints.maxWidth + AppSpacing.md) /
+                      (100 * textScale + AppSpacing.md))
+                  .floor()
+                  .clamp(1, 3);
+          final tileWidth =
+              (constraints.maxWidth - AppSpacing.md * (crossAxisCount - 1)) /
+              crossAxisCount;
+          final minHeight = 112 * textScale;
+          final tileHeight = tileWidth > minHeight ? tileWidth : minHeight;
+
           return GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: AppSpacing.md,
             crossAxisSpacing: AppSpacing.md,
-            childAspectRatio: 1.0,
+            childAspectRatio: tileWidth / tileHeight,
             children: [
               QuickActionCard(
                 icon: Icons.calendar_today,

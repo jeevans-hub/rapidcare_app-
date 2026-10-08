@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../widgets/section_title.dart';
@@ -64,9 +65,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Find Doctors'),
-      ),
+      appBar: AppBar(title: const Text('Find Doctors')),
       body: SafeArea(
         child: Column(
           children: [
@@ -76,9 +75,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DoctorSearchBar(
-                    onChanged: _onSearchChanged,
-                  ),
+                  DoctorSearchBar(onChanged: _onSearchChanged),
                   const SizedBox(height: AppSpacing.lg),
                   const SectionTitle(title: 'Specialities'),
                   const SizedBox(height: AppSpacing.md),
@@ -92,9 +89,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
               ),
             ),
             // Doctor list
-            Expanded(
-              child: _buildDoctorList(),
-            ),
+            Expanded(child: _buildDoctorList()),
           ],
         ),
       ),
@@ -103,9 +98,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
 
   Widget _buildDoctorList() {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (errorMessage != null) {
@@ -115,11 +108,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Colors.red,
-              ),
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: AppSpacing.md),
               Text(
                 errorMessage!,
@@ -144,11 +133,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.person_search,
-                size: 48,
-                color: Colors.grey,
-              ),
+              const Icon(Icons.person_search, size: 48, color: Colors.grey),
               const SizedBox(height: AppSpacing.md),
               const Text(
                 'No doctors found',
@@ -178,11 +163,28 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
             fee: doctor['consultationFee'] ?? 0,
             isAvailableToday: doctor['isAvailable'] ?? true,
             onTap: () {
+              final doctorId = doctor['_id'];
+              if (kDebugMode) debugPrint('[Doctor] Card tapped');
+              if (doctorId is! String ||
+                  !RegExp(r'^[0-9a-fA-F]{24}$').hasMatch(doctorId)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Doctor details are unavailable. Please refresh the list.',
+                    ),
+                  ),
+                );
+                return;
+              }
+              if (kDebugMode) {
+                debugPrint('[Doctor] Selected doctor ID: $doctorId');
+                debugPrint('[Doctor] Navigating to details');
+              }
               Navigator.pushNamed(
                 context,
                 AppRoutes.doctorDetails,
                 arguments: {
-                  'doctorId': doctor['_id'],
+                  'doctorId': doctorId,
                   'doctorName': doctor['name'],
                   'qualification': doctor['qualification'],
                   'specialization': doctor['specialty'],

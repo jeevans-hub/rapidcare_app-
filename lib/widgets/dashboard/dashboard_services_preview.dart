@@ -25,9 +25,11 @@ class DashboardServicesPreview extends StatelessWidget {
                   size: 24,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Healthcare Services',
-                  style: AppTextStyles.title,
+                Expanded(
+                  child: Text(
+                    'Healthcare Services',
+                    style: AppTextStyles.title,
+                  ),
                 ),
               ],
             ),
@@ -40,18 +42,9 @@ class DashboardServicesPreview extends StatelessWidget {
                   icon: Icons.medical_services,
                   label: 'Consultation',
                 ),
-                _ServiceChip(
-                  icon: Icons.local_pharmacy,
-                  label: 'Pharmacy',
-                ),
-                _ServiceChip(
-                  icon: Icons.emergency,
-                  label: 'Emergency',
-                ),
-                _ServiceChip(
-                  icon: Icons.security,
-                  label: 'Insurance',
-                ),
+                _ServiceChip(icon: Icons.local_pharmacy, label: 'Pharmacy'),
+                _ServiceChip(icon: Icons.emergency, label: 'Emergency'),
+                _ServiceChip(icon: Icons.security, label: 'Insurance'),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -72,10 +65,7 @@ class _ServiceChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _ServiceChip({
-    required this.icon,
-    required this.label,
-  });
+  const _ServiceChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -91,16 +81,9 @@ class _ServiceChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: AppColors.primaryBlue,
-          ),
+          Icon(icon, size: 16, color: AppColors.primaryBlue),
           const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: AppTextStyles.caption,
-          ),
+          Flexible(child: Text(label, style: AppTextStyles.caption)),
         ],
       ),
     );

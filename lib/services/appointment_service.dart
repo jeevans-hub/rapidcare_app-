@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import '../core/config/api_config.dart';
@@ -13,11 +14,29 @@ class AppointmentService {
     required String timeSlot,
     String? reason,
   }) async {
+    if (!RegExp(r'^[0-9a-fA-F]{24}$').hasMatch(doctorId) ||
+        DateTime.tryParse(appointmentDate) == null ||
+        timeSlot.trim().isEmpty) {
+      if (kDebugMode) {
+        debugPrint('[Appointment] Booking failure: invalid selection');
+      }
+      return {
+        'success': false,
+        'message': 'Please select a doctor, date and time slot',
+      };
+    }
     try {
       if (AuthService.token == null) {
+        if (kDebugMode) {
+          debugPrint('[Appointment] Booking failure: not authenticated');
+        }
         return {'success': false, 'message': 'Not authenticated'};
       }
 
+      if (kDebugMode) {
+        debugPrint('[Appointment] Doctor ID: $doctorId');
+        debugPrint('[Appointment] Request sent');
+      }
       final response = await http.post(
         Uri.parse('$baseUrl/appointments'),
         headers: {
@@ -32,7 +51,15 @@ class AppointmentService {
         }),
       );
 
+      if (kDebugMode) {
+        debugPrint('[Appointment] Response status: ${response.statusCode}');
+      }
       final data = jsonDecode(response.body);
+      if (kDebugMode) {
+        debugPrint(
+          '[Appointment] Booking ${response.statusCode == 201 && data['success'] == true ? 'success' : 'failure'}',
+        );
+      }
 
       if (response.statusCode == 201 && data['success'] == true) {
         return {'success': true, 'data': data['data']};
@@ -43,10 +70,12 @@ class AppointmentService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      if (kDebugMode) {
+        debugPrint(
+          '[Appointment] Booking failure: connection or response error',
+        );
+      }
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
@@ -65,7 +94,9 @@ class AppointmentService {
         queryParams['status'] = status;
       }
 
-      final uri = Uri.parse('$baseUrl/appointments').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$baseUrl/appointments',
+      ).replace(queryParameters: queryParams);
 
       final response = await http.get(
         uri,
@@ -86,15 +117,14 @@ class AppointmentService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
   // Get appointment by ID
-  static Future<Map<String, dynamic>> getAppointmentById(String appointmentId) async {
+  static Future<Map<String, dynamic>> getAppointmentById(
+    String appointmentId,
+  ) async {
     try {
       if (AuthService.token == null) {
         return {'success': false, 'message': 'Not authenticated'};
@@ -119,15 +149,14 @@ class AppointmentService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
   // Cancel appointment
-  static Future<Map<String, dynamic>> cancelAppointment(String appointmentId) async {
+  static Future<Map<String, dynamic>> cancelAppointment(
+    String appointmentId,
+  ) async {
     try {
       if (AuthService.token == null) {
         return {'success': false, 'message': 'Not authenticated'};
@@ -152,10 +181,7 @@ class AppointmentService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
@@ -193,10 +219,7 @@ class AppointmentService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 }

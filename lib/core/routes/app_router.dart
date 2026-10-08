@@ -118,20 +118,25 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const HomeScreen(),
         );
+      case AppRoutes.appointmentScreen:
       case AppRoutes.appointments:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const AppointmentScreen(),
         );
       case AppRoutes.doctorList:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const DoctorListScreen(),
         );
       case AppRoutes.doctorDetails:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const DoctorDetailsScreen(),
         );
       case AppRoutes.bookAppointment:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const BookAppointmentScreen(),
         );
       case AppRoutes.doctorSpecialties:
@@ -144,6 +149,7 @@ class AppRouter {
         );
       case AppRoutes.appointmentConfirmation:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const AppointmentConfirmationScreen(),
         );
       case AppRoutes.emergency:
@@ -352,6 +358,7 @@ class AppRouter {
         );
       case AppRoutes.healthArticleDetails:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const HealthArticleDetailsScreen(),
         );
       case AppRoutes.healthCategories:

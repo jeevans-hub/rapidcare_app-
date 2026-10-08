@@ -359,7 +359,7 @@ class _AppointmentCard extends StatelessWidget {
   String _formatDate(dynamic date) {
     if (date == null) return '';
     try {
-      final dateTime = DateTime.parse(date.toString());
+      final dateTime = DateTime.parse(date.toString()).toLocal();
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     } catch (e) {
       return date.toString();

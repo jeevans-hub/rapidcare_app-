@@ -24,11 +24,10 @@ class DashboardHealthOverview extends StatelessWidget {
                   size: 24,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Health Overview',
-                  style: AppTextStyles.title,
+                Expanded(
+                  child: Text('Health Overview', style: AppTextStyles.title),
                 ),
-                const Spacer(),
+                const SizedBox(width: AppSpacing.sm),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.sm,
@@ -48,35 +47,41 @@ class DashboardHealthOverview extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: AppSpacing.md,
-              crossAxisSpacing: AppSpacing.md,
-              childAspectRatio: 1.2,
-              children: const [
-                _HealthMetricCard(
-                  icon: Icons.directions_walk,
-                  label: 'Steps',
-                  value: '6,420',
-                ),
-                _HealthMetricCard(
-                  icon: Icons.bedtime,
-                  label: 'Sleep',
-                  value: '7h 20m',
-                ),
-                _HealthMetricCard(
-                  icon: Icons.water_drop,
-                  label: 'Water',
-                  value: '5 / 8',
-                ),
-                _HealthMetricCard(
-                  icon: Icons.favorite,
-                  label: 'Heart Rate',
-                  value: '72 BPM',
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) => Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                children:
+                    const <Widget>[
+                          _HealthMetricCard(
+                            icon: Icons.directions_walk,
+                            label: 'Steps',
+                            value: '6,420',
+                          ),
+                          _HealthMetricCard(
+                            icon: Icons.bedtime,
+                            label: 'Sleep',
+                            value: '7h 20m',
+                          ),
+                          _HealthMetricCard(
+                            icon: Icons.water_drop,
+                            label: 'Water',
+                            value: '5 / 8',
+                          ),
+                          _HealthMetricCard(
+                            icon: Icons.favorite,
+                            label: 'Heart Rate',
+                            value: '72 BPM',
+                          ),
+                        ]
+                        .map(
+                          (card) => SizedBox(
+                            width: (constraints.maxWidth - AppSpacing.md) / 2,
+                            child: card,
+                          ),
+                        )
+                        .toList(),
+              ),
             ),
           ],
         ),
@@ -107,21 +112,11 @@ class _HealthMetricCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: AppColors.primaryBlue,
-            size: 28,
-          ),
+          Icon(icon, color: AppColors.primaryBlue, size: 28),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            label,
-            style: AppTextStyles.caption,
-          ),
+          Text(label, style: AppTextStyles.caption),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            style: AppTextStyles.subtitle,
-          ),
+          Text(value, style: AppTextStyles.subtitle),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -21,21 +22,26 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   bool isLoading = true;
   String? errorMessage;
   String? doctorId;
+  bool _argumentsRead = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    doctorId = args?['doctorId']?.toString();
-    
-    // If we have doctorId but no data, fetch from API
-    if (doctorId != null && doctor == null) {
+    if (_argumentsRead) return;
+    _argumentsRead = true;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final selectedId = args is Map ? args['doctorId'] : null;
+    if (kDebugMode) {
+      debugPrint(
+        '[Doctor] Details argument received: ${args is Map ? 'map' : 'missing or invalid'}',
+      );
+    }
+    if (selectedId is String &&
+        RegExp(r'^[0-9a-fA-F]{24}$').hasMatch(selectedId)) {
+      doctorId = selectedId;
+      if (kDebugMode) debugPrint('[Doctor] Selected doctor ID: $doctorId');
       _loadDoctorDetails();
-    } else if (args != null && doctor == null) {
-      // Use passed data if available (fallback)
-      doctor = args;
-      isLoading = false;
-    } else if (args == null && doctor == null) {
+    } else {
       isLoading = false;
       errorMessage = 'No doctor selected';
     }
@@ -67,31 +73,21 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Doctor Details'),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        appBar: AppBar(title: const Text('Doctor Details')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Doctor Details'),
-        ),
+        appBar: AppBar(title: const Text('Doctor Details')),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: Colors.red,
-                ),
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   errorMessage!,
@@ -100,8 +96,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 ElevatedButton(
-                  onPressed: _loadDoctorDetails,
-                  child: const Text('Retry'),
+                  onPressed: doctorId == null
+                      ? () => Navigator.pushReplacementNamed(
+                          context,
+                          AppRoutes.doctorList,
+                        )
+                      : _loadDoctorDetails,
+                  child: Text(doctorId == null ? 'Select a Doctor' : 'Retry'),
                 ),
               ],
             ),
@@ -112,12 +113,8 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
 
     if (doctor == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Doctor Details'),
-        ),
-        body: const Center(
-          child: Text('No doctor data available'),
-        ),
+        appBar: AppBar(title: const Text('Doctor Details')),
+        body: const Center(child: Text('No doctor data available')),
       );
     }
 
@@ -168,7 +165,9 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
               Transform.translate(
                 offset: const Offset(0, -60),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: Column(
                     children: [
                       CircleAvatar(
@@ -229,7 +228,9 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.surfaceWhite,
                           borderRadius: BorderRadius.circular(AppRadius.large),
-                          border: Border.all(color: AppColors.backgroundLightGreyDark),
+                          border: Border.all(
+                            color: AppColors.backgroundLightGreyDark,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -241,7 +242,9 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                                 children: [
                                   Text(
                                     hospital,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   if (location.isNotEmpty)
                                     Text(
@@ -265,10 +268,13 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                           spacing: AppSpacing.sm,
                           runSpacing: AppSpacing.sm,
                           children: languages
-                              .map<Widget>((lang) => Chip(
-                                    label: Text(lang.toString()),
-                                    backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-                                  ))
+                              .map<Widget>(
+                                (lang) => Chip(
+                                  label: Text(lang.toString()),
+                                  backgroundColor: AppColors.primaryBlue
+                                      .withValues(alpha: 0.1),
+                                ),
+                              )
                               .toList(),
                         ),
                         const SizedBox(height: AppSpacing.xl),
@@ -276,8 +282,15 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       const SectionTitle(title: 'Available Timings'),
                       const SizedBox(height: AppSpacing.md),
                       DoctorAvailabilityCard(
-                        todaySlots: availableSlots.take(4).cast<String>().toList(),
-                        tomorrowSlots: availableSlots.skip(4).take(4).cast<String>().toList(),
+                        todaySlots: availableSlots
+                            .take(4)
+                            .cast<String>()
+                            .toList(),
+                        tomorrowSlots: availableSlots
+                            .skip(4)
+                            .take(4)
+                            .cast<String>()
+                            .toList(),
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       Row(
@@ -305,6 +318,10 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       PrimaryButton(
                         text: 'Book Appointment',
                         onPressed: () {
+                          if (kDebugMode) {
+                            debugPrint('[Appointment] Book button tapped');
+                            debugPrint('[Appointment] Doctor ID: $doctorId');
+                          }
                           Navigator.pushNamed(
                             context,
                             AppRoutes.bookAppointment,

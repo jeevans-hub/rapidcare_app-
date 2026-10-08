@@ -1,10 +1,18 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 
+// Booking dates represent a calendar day, not an instant in the client's timezone.
+const parseAppointmentDate = (value) => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(value) || Number.isNaN(Date.parse(value))) return null;
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+};
+
 // Create appointment
 const createAppointment = async (req, res, next) => {
   try {
-    const { doctorId, appointmentDate, timeSlot, reason } = req.body;
+    const { doctorId, appointmentDate, timeSlot, reason } = req.body || {};
     const userId = req.user.id;
 
     // Validation
@@ -22,11 +30,15 @@ const createAppointment = async (req, res, next) => {
       });
     }
 
-    if (!timeSlot) {
+    if (typeof timeSlot !== 'string' || !timeSlot.trim()) {
       return res.status(400).json({
         success: false,
         message: 'Time slot is required',
       });
+    }
+
+    if (reason != null && typeof reason !== 'string') {
+      return res.status(400).json({ success: false, message: 'Reason must be text' });
     }
 
     // Validate doctor ID format
@@ -47,8 +59,8 @@ const createAppointment = async (req, res, next) => {
     }
 
     // Validate date format and check if date is in the past
-    const appointmentDateObj = new Date(appointmentDate);
-    if (isNaN(appointmentDateObj.getTime())) {
+    const appointmentDateObj = parseAppointmentDate(appointmentDate);
+    if (!appointmentDateObj) {
       return res.status(400).json({
         success: false,
         message: 'Invalid appointment date format',
@@ -247,7 +259,7 @@ const cancelAppointment = async (req, res, next) => {
 const rescheduleAppointment = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { appointmentDate, timeSlot } = req.body;
+    const { appointmentDate, timeSlot } = req.body || {};
     const userId = req.user.id;
 
     // Validation
@@ -258,7 +270,7 @@ const rescheduleAppointment = async (req, res, next) => {
       });
     }
 
-    if (!timeSlot) {
+    if (typeof timeSlot !== 'string' || !timeSlot.trim()) {
       return res.status(400).json({
         success: false,
         message: 'Time slot is required',
@@ -299,8 +311,8 @@ const rescheduleAppointment = async (req, res, next) => {
     }
 
     // Validate date format and check if date is in the past
-    const newAppointmentDateObj = new Date(appointmentDate);
-    if (isNaN(newAppointmentDateObj.getTime())) {
+    const newAppointmentDateObj = parseAppointmentDate(appointmentDate);
+    if (!newAppointmentDateObj) {
       return res.status(400).json({
         success: false,
         message: 'Invalid appointment date format',

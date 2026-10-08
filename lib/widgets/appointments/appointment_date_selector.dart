@@ -9,7 +9,8 @@ class AppointmentDateSelector extends StatefulWidget {
   const AppointmentDateSelector({super.key, this.onDateSelected});
 
   @override
-  State<AppointmentDateSelector> createState() => _AppointmentDateSelectorState();
+  State<AppointmentDateSelector> createState() =>
+      _AppointmentDateSelectorState();
 }
 
 class _AppointmentDateSelectorState extends State<AppointmentDateSelector> {
@@ -21,56 +22,22 @@ class _AppointmentDateSelectorState extends State<AppointmentDateSelector> {
       height: 70,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children: [
-          _DateCard(
-            day: 'Mon',
-            date: '15',
-            isSelected: selectedDate == '2026-01-15',
-            onTap: () => _selectDate('2026-01-15'),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _DateCard(
-            day: 'Tue',
-            date: '16',
-            isSelected: selectedDate == '2026-01-16',
-            onTap: () => _selectDate('2026-01-16'),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _DateCard(
-            day: 'Wed',
-            date: '17',
-            isSelected: selectedDate == '2026-01-17',
-            onTap: () => _selectDate('2026-01-17'),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _DateCard(
-            day: 'Thu',
-            date: '18',
-            isSelected: selectedDate == '2026-01-18',
-            onTap: () => _selectDate('2026-01-18'),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _DateCard(
-            day: 'Fri',
-            date: '19',
-            isSelected: selectedDate == '2026-01-19',
-            onTap: () => _selectDate('2026-01-19'),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _DateCard(
-            day: 'Sat',
-            date: '20',
-            isSelected: selectedDate == '2026-01-20',
-            onTap: () => _selectDate('2026-01-20'),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          _DateCard(
-            day: 'Sun',
-            date: '21',
-            isSelected: selectedDate == '2026-01-21',
-            onTap: () => _selectDate('2026-01-21'),
-          ),
-        ],
+        children: List.generate(7, (index) {
+          final now = DateTime.now();
+          final date = DateTime(now.year, now.month, now.day + index);
+          final value =
+              '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+          const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          return Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: _DateCard(
+              day: weekdays[date.weekday - 1],
+              date: date.day.toString(),
+              isSelected: selectedDate == value,
+              onTap: () => _selectDate(value),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -107,7 +74,9 @@ class _DateCard extends StatelessWidget {
           color: isSelected ? AppColors.primaryBlue : AppColors.surfaceWhite,
           borderRadius: BorderRadius.circular(AppRadius.medium),
           border: Border.all(
-            color: isSelected ? AppColors.primaryBlue : AppColors.backgroundLightGreyDark,
+            color: isSelected
+                ? AppColors.primaryBlue
+                : AppColors.backgroundLightGreyDark,
           ),
         ),
         child: Column(
@@ -126,7 +95,9 @@ class _DateCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : AppColors.textPrimaryDarkGrey,
+                color: isSelected
+                    ? Colors.white
+                    : AppColors.textPrimaryDarkGrey,
               ),
             ),
           ],

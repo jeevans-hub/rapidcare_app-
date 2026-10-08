@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               SizedBox(height: AppSpacing.lg),
               DashboardHeader(),
               SizedBox(height: AppSpacing.lg),
@@ -57,16 +57,27 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: AppSpacing.xl),
               DashboardAppointmentPreview(),
               SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: DashboardHealthMonitoringPreview(),
-                  ),
-                  SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: DashboardHealthReportsPreview(),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final textScale =
+                      MediaQuery.textScalerOf(context).scale(16) / 16;
+                  if (constraints.maxWidth < 720 * textScale) {
+                    return const Column(
+                      children: [
+                        DashboardHealthMonitoringPreview(),
+                        SizedBox(height: AppSpacing.md),
+                        DashboardHealthReportsPreview(),
+                      ],
+                    );
+                  }
+                  return const Row(
+                    children: [
+                      Expanded(child: DashboardHealthMonitoringPreview()),
+                      SizedBox(width: AppSpacing.md),
+                      Expanded(child: DashboardHealthReportsPreview()),
+                    ],
+                  );
+                },
               ),
               SizedBox(height: AppSpacing.xl),
               DashboardServicesPreview(),

@@ -10,21 +10,30 @@ import '../../widgets/health_education/health_education_widgets.dart';
 class HealthArticleDetailsScreen extends StatelessWidget {
   const HealthArticleDetailsScreen({super.key});
 
+  // Stable IDs select the existing local articles independently of display text.
+  static const _articleTitles = {
+    'healthy-sleep-habits': 'Healthy Sleep Habits',
+    'staying-hydrated': 'Staying Hydrated',
+    'regular-exercise': 'Importance of Regular Exercise',
+    'balanced-nutrition': 'Understanding Balanced Nutrition',
+    'blood-pressure': 'Understanding Blood Pressure',
+  };
+
   @override
   Widget build(BuildContext context) {
-    final article =
-        (ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?) ??
-        <String, dynamic>{
-          'title': 'Health Education Article',
-          'category': 'General Wellness',
-          'readingTime': '3 min read',
-          'icon': Icons.article,
-        };
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    final article = arguments is Map ? arguments : const {};
+    final id = article['id'];
+    final title = article['title'] is String ? article['title'] as String : '';
+    // Keep title-only links from Health Education compatible. An unknown ID
+    // must never silently select a different article by title.
+    final contentTitle = id != null
+        ? _articleTitles[id]
+        : (_articleTitles.containsValue(title) ? title : null);
+    final availableContent = article['content'] ?? article['description'];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Article Details'),
-      ),
+      appBar: AppBar(title: const Text('Article Details')),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -40,7 +49,7 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      article['icon'] is IconData 
+                      article['icon'] is IconData
                           ? article['icon'] as IconData
                           : Icons.article,
                       size: 64,
@@ -50,7 +59,7 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  article['title']?.toString() ?? 'Unknown',
+                  title.isNotEmpty ? title : 'Article unavailable',
                   style: AppTextStyles.headline,
                   textAlign: TextAlign.center,
                 ),
@@ -75,59 +84,75 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                 HealthEducationInfoCard(
                   icon: Icons.access_time,
                   title: 'Reading Time',
-                  content: article['readingTime']?.toString() ?? 'Not Specified',
+                  content:
+                      article['readingTime']?.toString() ?? 'Not Specified',
                 ),
                 const SizedBox(height: AppSpacing.md),
-                const SectionTitle(title: 'Introduction'),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  _getArticleIntroduction(article['title']?.toString() ?? 'Unknown'),
-                  style: AppTextStyles.body,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Why It Matters'),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  _getWhyItMatters(article['title']?.toString() ?? 'Unknown'),
-                  style: AppTextStyles.body,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Healthy Habits'),
-                const SizedBox(height: AppSpacing.sm),
-                ..._getHealthyHabits(article['title']?.toString() ?? 'Unknown').map((habit) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('• ', style: AppTextStyles.body),
-                      Expanded(
-                        child: Text(habit, style: AppTextStyles.body),
-                      ),
-                    ],
+                if (contentTitle == null) ...[
+                  if (availableContent is String &&
+                      availableContent.trim().isNotEmpty)
+                    Text(availableContent, style: AppTextStyles.body),
+                  const SizedBox(height: AppSpacing.md),
+                  const Text(
+                    'Full article unavailable',
+                    style: AppTextStyles.body,
                   ),
-                )),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'Prevention Basics'),
-                const SizedBox(height: AppSpacing.sm),
-                ..._getPreventionBasics(article['title']?.toString() ?? 'Unknown').map((prevention) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('• ', style: AppTextStyles.body),
-                      Expanded(
-                        child: Text(prevention, style: AppTextStyles.body),
-                      ),
-                    ],
+                ] else ...[
+                  const SectionTitle(title: 'Introduction'),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    _getArticleIntroduction(contentTitle),
+                    style: AppTextStyles.body,
                   ),
-                )),
-                const SizedBox(height: AppSpacing.lg),
-                const SectionTitle(title: 'When to Seek Professional Help'),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  _getWhenToSeekHelp(article['title']?.toString() ?? 'Unknown'),
-                  style: AppTextStyles.body,
-                ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const SectionTitle(title: 'Why It Matters'),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    _getWhyItMatters(contentTitle),
+                    style: AppTextStyles.body,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const SectionTitle(title: 'Healthy Habits'),
+                  const SizedBox(height: AppSpacing.sm),
+                  ..._getHealthyHabits(contentTitle).map(
+                    (habit) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ', style: AppTextStyles.body),
+                          Expanded(
+                            child: Text(habit, style: AppTextStyles.body),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const SectionTitle(title: 'Prevention Basics'),
+                  const SizedBox(height: AppSpacing.sm),
+                  ..._getPreventionBasics(contentTitle).map(
+                    (prevention) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ', style: AppTextStyles.body),
+                          Expanded(
+                            child: Text(prevention, style: AppTextStyles.body),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const SectionTitle(title: 'When to Seek Professional Help'),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    _getWhenToSeekHelp(contentTitle),
+                    style: AppTextStyles.body,
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.xl),
                 Card(
                   color: AppColors.warningOrange.withValues(alpha: 0.1),
@@ -135,7 +160,10 @@ class HealthArticleDetailsScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSpacing.md),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline, color: AppColors.warningOrange),
+                        Icon(
+                          Icons.info_outline,
+                          color: AppColors.warningOrange,
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(

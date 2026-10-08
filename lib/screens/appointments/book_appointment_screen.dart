@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_colors.dart';
@@ -27,14 +28,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null && doctorData == null) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map<String, dynamic> &&
+        args['doctorId'] is String &&
+        RegExp(r'^[0-9a-fA-F]{24}$').hasMatch(args['doctorId']) &&
+        doctorData == null) {
       doctorData = args;
     }
   }
 
   Future<void> _bookAppointment() async {
-    if (doctorData == null || selectedDate == null || selectedTimeSlot == null) {
+    if (isBooking) return;
+    if (kDebugMode) debugPrint('[Appointment] Book button tapped');
+    if (doctorData == null ||
+        selectedDate == null ||
+        selectedTimeSlot == null) {
       setState(() {
         errorMessage = 'Please select date and time slot';
       });
@@ -69,10 +77,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             Navigator.pushReplacementNamed(
               context,
               AppRoutes.appointmentConfirmation,
-              arguments: {
-                'appointment': appointment,
-                'doctor': doctorData,
-              },
+              arguments: {'appointment': appointment, 'doctor': doctorData},
             );
           }
         });
@@ -88,23 +93,18 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   Widget build(BuildContext context) {
     if (doctorData == null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Book Appointment'),
-        ),
-        body: const Center(
-          child: Text('No doctor selected'),
-        ),
+        appBar: AppBar(title: const Text('Book Appointment')),
+        body: const Center(child: Text('No doctor selected')),
       );
     }
 
     final doctorName = doctorData!['doctorName'] ?? 'Doctor';
     final hospital = doctorData!['hospital'] ?? '';
-    final availableSlots = doctorData!['availableSlots'] as List<dynamic>? ?? [];
+    final availableSlots =
+        doctorData!['availableSlots'] as List<dynamic>? ?? [];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Book Appointment'),
-      ),
+      appBar: AppBar(title: const Text('Book Appointment')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -147,6 +147,11 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 onDateSelected: (date) {
                   setState(() {
                     selectedDate = date;
+                    if (kDebugMode) {
+                      debugPrint(
+                        '[Appointment] Date/time selected: date=$date',
+                      );
+                    }
                   });
                 },
               ),
@@ -158,6 +163,11 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 onSlotSelected: (slot) {
                   setState(() {
                     selectedTimeSlot = slot;
+                    if (kDebugMode) {
+                      debugPrint(
+                        '[Appointment] Date/time selected: time=$slot',
+                      );
+                    }
                   });
                 },
               ),
@@ -194,7 +204,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       Expanded(
                         child: Text(
                           errorMessage!,
-                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ],

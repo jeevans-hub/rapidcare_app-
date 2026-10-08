@@ -25,9 +25,11 @@ class DashboardAppointmentPreview extends StatelessWidget {
                   size: 24,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Upcoming Appointment',
-                  style: AppTextStyles.title,
+                Expanded(
+                  child: Text(
+                    'Upcoming Appointment',
+                    style: AppTextStyles.title,
+                  ),
                 ),
               ],
             ),
@@ -41,15 +43,9 @@ class DashboardAppointmentPreview extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'General Consultation',
-                    style: AppTextStyles.subtitle,
-                  ),
+                  Text('General Consultation', style: AppTextStyles.subtitle),
                   const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    'Demo Doctor',
-                    style: AppTextStyles.caption,
-                  ),
+                  Text('Demo Doctor', style: AppTextStyles.caption),
                   const SizedBox(height: AppSpacing.sm),
                   Row(
                     children: [
@@ -59,9 +55,11 @@ class DashboardAppointmentPreview extends StatelessWidget {
                         color: AppColors.textSecondaryGrey,
                       ),
                       const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        '18 Aug 2026 • 10:30 AM',
-                        style: AppTextStyles.caption,
+                      Expanded(
+                        child: Text(
+                          '18 Aug 2026 • 10:30 AM',
+                          style: AppTextStyles.caption,
+                        ),
                       ),
                     ],
                   ),
@@ -87,12 +85,20 @@ class DashboardAppointmentPreview extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.appointments);
-                  },
-                  child: const Text('View Appointments'),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.appointments);
+                      },
+                      child: const Text(
+                        'View Appointments',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

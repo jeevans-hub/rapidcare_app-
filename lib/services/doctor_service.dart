@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../core/config/api_config.dart';
 
@@ -25,7 +26,9 @@ class DoctorService {
       }
 
       // Build URI with query parameters
-      final uri = Uri.parse('$baseUrl/doctors').replace(queryParameters: queryParams);
+      final uri = Uri.parse(
+        '$baseUrl/doctors',
+      ).replace(queryParameters: queryParams);
 
       final response = await http.get(uri);
 
@@ -40,19 +43,17 @@ class DoctorService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 
   // Get doctor by ID
   static Future<Map<String, dynamic>> getDoctorById(String doctorId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/doctors/$doctorId'),
-      );
+      final response = await http.get(Uri.parse('$baseUrl/doctors/$doctorId'));
+      if (kDebugMode) {
+        debugPrint('[Doctor] Details API status: ${response.statusCode}');
+      }
 
       final data = jsonDecode(response.body);
 
@@ -65,10 +66,7 @@ class DoctorService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+      return {'success': false, 'message': 'Unable to connect to the server'};
     }
   }
 }
