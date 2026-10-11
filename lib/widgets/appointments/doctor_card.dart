@@ -14,6 +14,7 @@ class DoctorCard extends StatelessWidget {
   final int reviewCount;
   final int fee;
   final bool isAvailableToday;
+  final bool isDemo;
   final VoidCallback? onTap;
 
   const DoctorCard({
@@ -27,6 +28,7 @@ class DoctorCard extends StatelessWidget {
     required this.reviewCount,
     required this.fee,
     this.isAvailableToday = true,
+    this.isDemo = false,
     this.onTap,
   });
 
@@ -67,7 +69,9 @@ class DoctorCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    qualification,
+                    isDemo
+                        ? 'Demo doctor — appointments are for testing only.'
+                        : qualification,
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondaryGrey,
@@ -82,10 +86,11 @@ class DoctorCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  DoctorRatingWidget(
-                    rating: rating,
-                    reviewCount: reviewCount,
-                  ),
+                  if (!isDemo)
+                    DoctorRatingWidget(
+                      rating: rating,
+                      reviewCount: reviewCount,
+                    ),
                   const SizedBox(height: 4),
                   Row(
                     children: [

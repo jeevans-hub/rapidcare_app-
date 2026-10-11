@@ -61,22 +61,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             icon: const Icon(Icons.filter_list),
             onSelected: _onStatusFilterChanged,
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: null,
-                child: Text('All'),
-              ),
-              const PopupMenuItem(
-                value: 'scheduled',
-                child: Text('Scheduled'),
-              ),
-              const PopupMenuItem(
-                value: 'completed',
-                child: Text('Completed'),
-              ),
-              const PopupMenuItem(
-                value: 'cancelled',
-                child: Text('Cancelled'),
-              ),
+              const PopupMenuItem(value: null, child: Text('All')),
+              const PopupMenuItem(value: 'scheduled', child: Text('Scheduled')),
+              const PopupMenuItem(value: 'completed', child: Text('Completed')),
+              const PopupMenuItem(value: 'cancelled', child: Text('Cancelled')),
             ],
           ),
         ],
@@ -104,9 +92,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 ],
               ),
             ),
-            Expanded(
-              child: _buildAppointmentList(),
-            ),
+            Expanded(child: _buildAppointmentList()),
           ],
         ),
       ),
@@ -121,9 +107,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
 
   Widget _buildAppointmentList() {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (errorMessage != null) {
@@ -133,11 +117,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Colors.red,
-              ),
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: AppSpacing.md),
               Text(
                 errorMessage!,
@@ -162,11 +142,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.event_busy,
-                size: 48,
-                color: Colors.grey,
-              ),
+              const Icon(Icons.event_busy, size: 48, color: Colors.grey),
               const SizedBox(height: AppSpacing.md),
               const Text(
                 'No appointments found',
@@ -177,10 +153,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 selectedStatus != null
                     ? 'Try changing the filter'
                     : 'Book your first appointment',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
@@ -197,8 +170,11 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         return _AppointmentCard(
           doctorName: doctor['name'] ?? 'Unknown Doctor',
           specialty: doctor['specialty'] ?? '',
-          hospital: doctor['hospital'] ?? '',
-          appointmentDate: appointment['appointmentDate'],
+          hospital: appointment['isDemo'] == true || doctor['isDemo'] == true
+              ? 'Demo booking — testing only. No clinic contacted.'
+              : doctor['hospital'] ?? '',
+          appointmentDate:
+              appointment['appointmentDay'] ?? appointment['appointmentDate'],
           timeSlot: appointment['timeSlot'] ?? '',
           status: appointment['status'] ?? 'scheduled',
           onTap: () {
@@ -317,10 +293,7 @@ class _AppointmentCard extends StatelessWidget {
               if (specialty.isNotEmpty)
                 Text(
                   specialty,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.primaryBlue,
-                  ),
+                  style: TextStyle(fontSize: 14, color: AppColors.primaryBlue),
                 ),
               const SizedBox(height: AppSpacing.sm),
               if (hospital.isNotEmpty)
@@ -334,7 +307,11 @@ class _AppointmentCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     _formatDate(appointmentDate),
@@ -343,10 +320,7 @@ class _AppointmentCard extends StatelessWidget {
                   const SizedBox(width: AppSpacing.md),
                   const Icon(Icons.access_time, size: 16, color: Colors.grey),
                   const SizedBox(width: 4),
-                  Text(
-                    timeSlot,
-                    style: const TextStyle(fontSize: 12),
-                  ),
+                  Text(timeSlot, style: const TextStyle(fontSize: 12)),
                 ],
               ),
             ],
@@ -359,7 +333,9 @@ class _AppointmentCard extends StatelessWidget {
   String _formatDate(dynamic date) {
     if (date == null) return '';
     try {
-      final dateTime = DateTime.parse(date.toString()).toLocal();
+      final dateTime = date.toString().length == 10
+          ? DateTime.parse(date.toString())
+          : DateTime.parse(date.toString()).toLocal();
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     } catch (e) {
       return date.toString();

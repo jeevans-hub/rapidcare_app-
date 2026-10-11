@@ -1,0 +1,52 @@
+{
+  "fields": [
+    "name",
+    "specialty",
+    "qualification",
+    "experienceYears",
+    "hospital",
+    "location",
+    "consultationFee",
+    "rating",
+    "reviewCount",
+    "about",
+    "languages",
+    "availableDays",
+    "availableSlots",
+    "isAvailable"
+  ],
+  "fingerprints": [
+    {
+      "name": "Dr. Sarah Johnson",
+      "hash": "80719ab068be82bf07e2de6cab3c4e4b143310b9005dc7eb24e630b881e32580"
+    },
+    {
+      "name": "Dr. Michael Lee",
+      "hash": "c2cffce1299407d82cb7d98a129954229c44280b590a517bb4eff931dda3b5f8"
+    },
+    {
+      "name": "Dr. Emily Brown",
+      "hash": "398a764433ef038704ded7da10eb28bdda142244e8bf058eb220166c695cd777"
+    },
+    {
+      "name": "Dr. David Wilson",
+      "hash": "38ba1bc62bfdfff514339df1ae6e9149c5227502c16192f2602d3ec67b4e65a4"
+    },
+    {
+      "name": "Dr. Jennifer Martinez",
+      "hash": "9e7e71a35d9b60788d11216e12ca01653374b16f85e7cfa7d8c1a47b7df7a132"
+    },
+    {
+      "name": "Dr. Robert Chen",
+      "hash": "a6709c16c94bdc1bff63b566ba4994c7b6d1dda7db0e9b642259162abffce70f"
+    },
+    {
+      "name": "Dr. Amanda White",
+      "hash": "7824ec85bf8b92f3e4224ecc2900f54184b0d4c98a0c3ff1e34a2f6317005eb8"
+    },
+    {
+      "name": "Dr. James Anderson",
+      "hash": "64de3fbb742213280e99b61f7fa02819d1f69bc87cc666206a8d4ae929a3ee4a"
+    }
+  ]
+}

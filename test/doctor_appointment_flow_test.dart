@@ -29,6 +29,9 @@ const doctor = <String, dynamic>{
 String calendarDay(DateTime date) =>
     '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+DateTime istNow() =>
+    DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+
 void main() {
   tearDown(() async => AuthService.logout());
 
@@ -65,6 +68,10 @@ void main() {
             'token': 'test-token',
             'user': {'name': 'Test'},
           };
+        } else if (request.url.path.endsWith(
+          '/doctors/$doctorId/availability',
+        )) {
+          data = {'slots': doctor['availableSlots']};
         } else if (request.url.path.endsWith('/doctors/$doctorId')) {
           data = {'doctor': doctor};
         } else if (request.url.path.endsWith('/doctors')) {
@@ -77,7 +84,7 @@ void main() {
             final body = jsonDecode(request.body) as Map<String, dynamic>;
             expect(body['doctorId'], doctorId);
             expect(body['timeSlot'], '09:00 AM');
-            expect(body['appointmentDate'], calendarDay(DateTime.now()));
+            expect(body['appointmentDate'], calendarDay(istNow()));
             appointment = {
               '_id': '507f1f77bcf86cd799439022',
               ...body,
@@ -133,9 +140,10 @@ void main() {
         await tester.tap(
           find.descendant(
             of: find.byType(AppointmentDateSelector),
-            matching: find.text(DateTime.now().day.toString()),
+            matching: find.text(istNow().day.toString()),
           ),
         );
+        await tester.pumpAndSettle();
         await tester.tap(find.widgetWithText(TimeSlotCard, '09:00 AM'));
         await tester.ensureVisible(
           find.widgetWithText(ElevatedButton, 'Book Appointment'),
@@ -148,7 +156,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Appointment Confirmed!'), findsOneWidget);
         expect(find.text('507f1f77'), findsOneWidget);
-        final today = DateTime.now();
+        final today = istNow();
         final displayDate = '${today.day}/${today.month}/${today.year}';
         expect(find.text(displayDate), findsOneWidget);
         await tester.ensureVisible(find.text('View My Appointments'));

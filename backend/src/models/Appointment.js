@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({
+  appointmentDay: String,
+  isDemo: { type: Boolean, default: false },
+  consultationFee: Number,
+  timeZone: { type: String, default: 'Asia/Kolkata' },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

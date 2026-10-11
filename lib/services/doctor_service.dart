@@ -6,6 +6,31 @@ import '../core/config/api_config.dart';
 class DoctorService {
   static String get baseUrl => ApiConfig.baseUrl;
 
+  static Future<Map<String, dynamic>> getAvailability(
+    String doctorId,
+    String date,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/doctors/$doctorId/availability',
+        ).replace(queryParameters: {'date': date}),
+      );
+      final data = jsonDecode(response.body);
+      return response.statusCode == 200 && data['success'] == true
+          ? {'success': true, 'data': data['data']}
+          : {
+              'success': false,
+              'message': data['message'] ?? 'Unable to load available slots',
+            };
+    } catch (_) {
+      return {
+        'success': false,
+        'message': 'Unable to load available slots. Please try again.',
+      };
+    }
+  }
+
   // Get all doctors with optional filtering
   static Future<Map<String, dynamic>> getDoctors({
     String? search,

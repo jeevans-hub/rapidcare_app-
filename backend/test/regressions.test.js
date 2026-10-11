@@ -145,7 +145,7 @@ test('another user cannot cancel an order or restore its stock', async () => {
 });
 
 async function doctor() {
-  return Doctor.create({ name: 'Doctor', specialty: 'General Medicine', qualification: 'MBBS', experienceYears: 5, hospital: 'Test', consultationFee: 10 });
+  return Doctor.create({ name: 'Doctor', specialty: 'General Medicine', qualification: 'MBBS', experienceYears: 5, hospital: 'Test', consultationFee: 10, availableDays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] });
 }
 
 test('concurrent bookings return one success and one conflict; cancellation releases the slot', async () => {
@@ -217,4 +217,105 @@ test('booking persists the selected doctor and day, and history is scoped to its
   assert.equal((await request(`/appointments/${id}`, { user: users[1], method: 'GET' })).status, 404);
   assert.equal((await request('/appointments', { user: users[0], body })).status, 409);
   assert.equal((await request(`/appointments/${id}/reschedule`, { user: users[0], method: 'PATCH', body: { appointmentDate: [], timeSlot: '09:00 AM' } })).status, 400);
+});
+
+const seedDoctors = require('../src/seed/doctorSeed');
+const { parseDay, scheduledSlots } = require('../src/utils/doctorSchedule');
+function futureDay(doctor, scheduled = true) {
+  for (let i = 1; i < 15; i++) {
+    const date = new Date(Date.now() + i * 86400000);
+    const day = date.toISOString().slice(0, 10);
+    const weekday = new Intl.DateTimeFormat('en', { weekday: 'long', timeZone: 'UTC' }).format(parseDay(day));
+    if (doctor.availableDays.includes(weekday) === scheduled) return day;
+  }
+}
+test('20 demo profiles: idempotent upserts, exact API data, search, filters and availability', async () => {
+  assert.equal((await seedDoctors()).activeDemoDoctors, 20);
+  const first = await Doctor.find({ isDemo: true }).sort('demoKey').lean();
+  await Doctor.updateOne({ _id: first[0]._id }, { consultationFee: 1 });
+  await seedDoctors();
+  const list = (await request('/doctors', { method: 'GET' })).body.data;
+  assert.equal(list.doctors.length, 20);
+  assert.equal(new Set(list.doctors.map(d => d.demoKey)).size, 20);
+  assert.equal(list.specialties.length, 20);
+  assert.deepEqual(list.doctors.map(d => d.consultationFee), [500,1000,750,850,650,1100,650,700,950,1000,900,800,1000,950,1050,600,900,1200,800,550]);
+  for (const [i, d] of list.doctors.entries()) {
+    assert.equal(d._id, first[i]._id.toString());
+    assert.equal(d.demoKey, 'RC-D' + String(i + 1).padStart(3, '0'));
+    const details = await request('/doctors/' + d._id, { method: 'GET' });
+    assert.deepEqual(details.body.data.doctor, d);
+    assert.equal(d.isDemo, true); assert.equal(d.contactStatus, 'demo-only');
+    assert.equal(d.contactPhone, null); assert.match(d.contactEmail, /@rapidcare\.example$/);
+    assert.equal(d.qualification, null); assert.equal(d.experienceYears, null);
+    assert.equal(d.rating, 0); assert.equal(d.reviewCount, 0); assert.equal(d.profileImageUrl, null);
+    const date = futureDay(d);
+    const availability = await request('/doctors/' + d._id + '/availability?date=' + date, { method: 'GET' });
+    assert.deepEqual(availability.body.data.slots, d.availableSlots);
+    assert.equal(availability.body.data.slots.length, 6);
+    assert.equal(availability.body.data.timeZone, 'Asia/Kolkata');
+    assert.deepEqual((await request('/doctors/' + d._id + '/availability?date=' + futureDay(d, false), { method: 'GET' })).body.data.slots, []);
+    const filter = await request('/doctors?specialty=' + encodeURIComponent(d.specialty), { method: 'GET' });
+    assert.deepEqual(filter.body.data.doctors.map(x => x._id), [d._id]);
+    const search = await request('/doctors?search=' + encodeURIComponent(d.name), { method: 'GET' });
+    assert.deepEqual(search.body.data.doctors.map(x => x._id), [d._id]);
+  }
+  assert.equal((await request('/doctors?search=Cardiology', { method: 'GET' })).body.data.doctors.length, 1);
+  assert.equal((await request('/doctors?search=%5B', { method: 'GET' })).status, 200);
+  assert.equal((await request('/doctors/invalid/availability?date=invalid', { method: 'GET' })).status, 400);
+});
+
+const originalLegacyDoctors = [{"name":"Dr. Sarah Johnson","specialty":"Cardiology","qualification":"MBBS, MD","experienceYears":12,"hospital":"City General Hospital","location":"New York","consultationFee":600,"rating":4.8,"reviewCount":234,"about":"Dr. Sarah Johnson is a highly experienced cardiologist with over 12 years of experience in treating heart conditions. She specializes in interventional cardiology and has successfully treated thousands of patients.","languages":["English","Spanish"],"availableDays":["Monday","Tuesday","Wednesday","Thursday","Friday"],"availableSlots":["09:00 AM","09:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","02:00 PM","02:30 PM","03:00 PM","03:30 PM","04:00 PM","04:30 PM"],"isAvailable":true},{"name":"Dr. Michael Lee","specialty":"Dermatology","qualification":"MBBS, MD","experienceYears":8,"hospital":"St. Mary's Medical Center","location":"Los Angeles","consultationFee":500,"rating":4.6,"reviewCount":189,"about":"Dr. Michael Lee specializes in dermatology with expertise in treating various skin conditions. He is known for his patient-centered approach and effective treatments.","languages":["English","Mandarin"],"availableDays":["Monday","Wednesday","Friday"],"availableSlots":["10:00 AM","11:00 AM","02:00 PM","03:00 PM","04:00 PM"],"isAvailable":true},{"name":"Dr. Emily Brown","specialty":"Orthopedics","qualification":"MBBS, MS","experienceYears":15,"hospital":"Riverside Clinic","location":"Chicago","consultationFee":700,"rating":4.9,"reviewCount":312,"about":"Dr. Emily Brown is an orthopedic surgeon with 15 years of experience. She specializes in joint replacement and sports medicine.","languages":["English"],"availableDays":["Tuesday","Thursday","Saturday"],"availableSlots":["09:00 AM","11:00 AM","01:00 PM","03:00 PM"],"isAvailable":true},{"name":"Dr. David Wilson","specialty":"Neurology","qualification":"MBBS, MD","experienceYears":10,"hospital":"City General Hospital","location":"New York","consultationFee":650,"rating":4.7,"reviewCount":156,"about":"Dr. David Wilson is a neurologist specializing in neurological disorders. He has extensive experience in diagnosing and treating conditions affecting the nervous system.","languages":["English","French"],"availableDays":["Monday","Tuesday","Thursday","Friday"],"availableSlots":["09:30 AM","10:30 AM","11:30 AM","02:30 PM","03:30 PM"],"isAvailable":true},{"name":"Dr. Jennifer Martinez","specialty":"Pediatrics","qualification":"MBBS, MD","experienceYears":7,"hospital":"Children's Hospital","location":"Houston","consultationFee":450,"rating":4.5,"reviewCount":98,"about":"Dr. Jennifer Martinez is a pediatrician dedicated to providing comprehensive care for children. She specializes in preventive care and childhood development.","languages":["English","Spanish"],"availableDays":["Monday","Wednesday","Friday"],"availableSlots":["09:00 AM","10:00 AM","11:00 AM","02:00 PM","03:00 PM"],"isAvailable":true},{"name":"Dr. Robert Chen","specialty":"General Medicine","qualification":"MBBS, MD","experienceYears":20,"hospital":"Metro Medical Center","location":"San Francisco","consultationFee":400,"rating":4.6,"reviewCount":278,"about":"Dr. Robert Chen is a general practitioner with 20 years of experience. He provides comprehensive primary care services and focuses on preventive medicine.","languages":["English","Mandarin","Cantonese"],"availableDays":["Monday","Tuesday","Wednesday","Thursday","Friday"],"availableSlots":["08:00 AM","09:00 AM","10:00 AM","11:00 AM","02:00 PM","03:00 PM","04:00 PM"],"isAvailable":true},{"name":"Dr. Amanda White","specialty":"Gynecology","qualification":"MBBS, MD","experienceYears":11,"hospital":"Women's Health Center","location":"Boston","consultationFee":550,"rating":4.7,"reviewCount":201,"about":"Dr. Amanda White specializes in gynecology and women's health. She provides comprehensive care for women of all ages.","languages":["English"],"availableDays":["Tuesday","Thursday","Saturday"],"availableSlots":["09:00 AM","10:30 AM","12:00 PM","02:30 PM","04:00 PM"],"isAvailable":true},{"name":"Dr. James Anderson","specialty":"ENT","qualification":"MBBS, MS","experienceYears":9,"hospital":"City General Hospital","location":"New York","consultationFee":480,"rating":4.4,"reviewCount":145,"about":"Dr. James Anderson is an ENT specialist treating ear, nose, and throat conditions. He has expertise in both medical and surgical treatments.","languages":["English","German"],"availableDays":["Monday","Wednesday","Friday"],"availableSlots":["10:00 AM","11:30 AM","02:00 PM","03:30 PM"],"isAvailable":true}];
+
+test('retire only exact legacy seeds; preserve IDs, appointments and edited/user-created doctors', async () => {
+  const old = await Doctor.create(originalLegacyDoctors);
+  const custom = await doctor();
+  const edited = await Doctor.create({ ...originalLegacyDoctors[0], about: 'User edited this profile' });
+  const appointment = await Appointment.create({ doctor: old[0]._id, user: users[0]._id, appointmentDate: new Date('2030-01-15'), timeSlot: '09:00 AM' });
+  const result = await seedDoctors();
+  assert.equal(result.retired, 8); assert.equal(result.activeDemoDoctors, 20); assert.equal(result.unrecognizedLegacyCount, 1);
+  assert.equal(await Doctor.countDocuments(), 30);
+  assert.equal((await Doctor.findById(custom.id)).isActive, true);
+  assert.equal((await Doctor.findById(edited.id)).isActive, true);
+  const preserved = await Appointment.findById(appointment.id).populate('doctor');
+  assert.equal(preserved.doctor.id, old[0].id); assert.equal(preserved.doctor.name, old[0].name);
+  assert.equal((await request('/appointments/' + appointment.id, { user: users[0], method: 'GET' })).status, 200);
+  await seedDoctors(); assert.equal(await Appointment.countDocuments(), 1);
+});
+test('demo booking enforces schedules, future IST slots, server fee, conflict and owner privacy', async () => {
+  await seedDoctors();
+  const d = await Doctor.findOne({ demoKey: 'RC-D001' });
+  const date = futureDay(d);
+  const body = { doctorId: d.id, appointmentDate: date, timeSlot: d.availableSlots[0], consultationFee: 1, isDemo: false };
+  assert.equal((await request('/appointments', { body })).status, 401);
+  for (const invalid of [{ appointmentDate: futureDay(d, false) }, { timeSlot: '12:00 PM' }, { timeSlot: '09:15 AM' }, { appointmentDate: '2020-01-01' }]) {
+    assert.equal((await request('/appointments', { user: users[0], body: { ...body, ...invalid } })).status, 400);
+  }
+  const results = await Promise.all(users.map(user => request('/appointments', { user, body })));
+  assert.deepEqual(results.map(r => r.status).sort(), [201, 409]);
+  const a = results.find(r => r.status === 201).body.data.appointment;
+  assert.equal(a.consultationFee, 500); assert.equal(a.isDemo, true); assert.equal(a.appointmentDay, date);
+  assert.equal(a.appointmentDate, date + 'T00:00:00.000Z');
+  const owner = users.find(u => u.id === a.user); const other = users.find(u => u.id !== a.user);
+  assert.deepEqual((await request('/appointments', { user: other, method: 'GET' })).body.data.appointments, []);
+  for (const [suffix, method] of [['', 'GET'], ['/cancel', 'PATCH'], ['/reschedule', 'PATCH']]) {
+    assert.equal((await request('/appointments/' + a._id + suffix, { user: other, method, ...(method === 'PATCH' ? { body } : {}) })).status, 404);
+  }
+  assert.equal((await request('/appointments/' + a._id + '/reschedule', { user: owner, method: 'PATCH', body: { appointmentDate: futureDay(d, false), timeSlot: body.timeSlot } })).status, 400);
+  const slots = (await request('/doctors/' + d.id + '/availability?date=' + date, { method: 'GET' })).body.data.slots;
+  assert.equal(slots.includes(body.timeSlot), false);
+  assert.equal(slots.length, 5);
+});
+test('IST slot boundary is independent of host timezone and excludes elapsed same-day slots', () => {
+  const d = seedDoctors.demoDoctors[0]; // Monday 09:00–12:00 IST
+  const date = parseDay('2030-01-14');
+  assert.equal(scheduledSlots(d, date, new Date('2030-01-14T03:29:59Z')).length, 6);
+  assert.equal(scheduledSlots(d, date, new Date('2030-01-14T03:30:00Z')).includes('09:00 AM'), false);
+  assert.equal(scheduledSlots(d, date, new Date('2030-01-14T06:00:00Z')).length, 0);
+  assert.equal(parseDay('2030-02-30'), null);
+});
+test('production seeding is refused before any write', async () => {
+  process.env.NODE_ENV = 'production';
+  try { await assert.rejects(seedDoctors(), /disabled in production/); }
+  finally { process.env.NODE_ENV = 'test'; }
+  assert.equal(await Doctor.countDocuments(), 0);
 });

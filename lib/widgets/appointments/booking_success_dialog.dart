@@ -5,7 +5,8 @@ import '../../core/theme/app_radius.dart';
 import '../primary_button.dart';
 
 class BookingSuccessDialog extends StatelessWidget {
-  const BookingSuccessDialog({super.key});
+  final bool isDemo;
+  const BookingSuccessDialog({super.key, this.isDemo = false});
 
   @override
   Widget build(BuildContext context) {
@@ -34,16 +35,15 @@ class BookingSuccessDialog extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             const Text(
               'Appointment Confirmed!',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const Text(
-              'Your appointment has been successfully booked.',
-              style: TextStyle(
+            Text(
+              isDemo
+                  ? 'Demo booking — testing only. No clinic was contacted.'
+                  : 'Your appointment has been successfully booked.',
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondaryGrey,
               ),

@@ -21,6 +21,8 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
   String? errorMessage;
   String? selectedSpecialty;
   String searchQuery = '';
+  List<String> specialties = ['All'];
+  int _loadVersion = 0;
 
   @override
   void initState() {
@@ -29,6 +31,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
   }
 
   Future<void> _loadDoctors() async {
+    final version = ++_loadVersion;
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -39,11 +42,18 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
       specialty: selectedSpecialty,
     );
 
-    if (mounted) {
+    if (mounted && version == _loadVersion) {
       setState(() {
         isLoading = false;
         if (result['success'] == true) {
           doctors = result['data']['doctors'] ?? [];
+          specialties = [
+            'All',
+            ...List<String>.from(
+              result['data']['specialties'] ??
+                  doctors.map((d) => d['specialty']).toSet(),
+            ),
+          ];
         } else {
           errorMessage = result['message'] ?? 'Failed to load doctors';
           doctors = [];
@@ -80,6 +90,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
                   const SectionTitle(title: 'Specialities'),
                   const SizedBox(height: AppSpacing.md),
                   SpecialityFilterSection(
+                    specialties: specialties,
                     onSpecialtySelected: _onSpecialtySelected,
                   ),
                   const SizedBox(height: AppSpacing.xl),
@@ -153,6 +164,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
         return Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.md),
           child: DoctorCard(
+            isDemo: doctor['isDemo'] == true,
             doctorName: doctor['name'] ?? 'Unknown',
             qualification: doctor['qualification'] ?? '',
             specialization: doctor['specialty'] ?? '',

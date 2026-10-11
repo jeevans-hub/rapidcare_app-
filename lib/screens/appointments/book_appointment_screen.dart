@@ -9,6 +9,7 @@ import '../../widgets/appointments/appointment_date_selector.dart';
 import '../../widgets/appointments/time_slot_section.dart';
 import '../../widgets/appointments/booking_success_dialog.dart';
 import '../../services/appointment_service.dart';
+import '../../services/doctor_service.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
   const BookAppointmentScreen({super.key});
@@ -23,6 +24,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   String? selectedTimeSlot;
   String? reason;
   bool isBooking = false;
+  bool isLoadingSlots = false;
+  List<String> availableSlots = [];
+  int _slotVersion = 0;
   String? errorMessage;
 
   @override
@@ -37,12 +41,37 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     }
   }
 
+  Future<void> _loadSlots(String date) async {
+    final version = ++_slotVersion;
+    setState(() {
+      selectedDate = date;
+      selectedTimeSlot = null;
+      availableSlots = [];
+      isLoadingSlots = true;
+      errorMessage = null;
+    });
+    final result = await DoctorService.getAvailability(
+      doctorData!['doctorId'],
+      date,
+    );
+    if (!mounted || version != _slotVersion) return;
+    setState(() {
+      isLoadingSlots = false;
+      if (result['success'] == true) {
+        availableSlots = List<String>.from(result['data']['slots']);
+      } else {
+        errorMessage = result['message'];
+      }
+    });
+  }
+
   Future<void> _bookAppointment() async {
-    if (isBooking) return;
+    if (isBooking || isLoadingSlots) return;
     if (kDebugMode) debugPrint('[Appointment] Book button tapped');
     if (doctorData == null ||
         selectedDate == null ||
-        selectedTimeSlot == null) {
+        selectedTimeSlot == null ||
+        !availableSlots.contains(selectedTimeSlot)) {
       setState(() {
         errorMessage = 'Please select date and time slot';
       });
@@ -71,7 +100,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         if (!mounted) return;
         showDialog(
           context: context,
-          builder: (context) => const BookingSuccessDialog(),
+          builder: (context) => BookingSuccessDialog(
+            isDemo:
+                appointment['isDemo'] == true || doctorData?['isDemo'] == true,
+          ),
         ).then((_) {
           if (mounted) {
             Navigator.pushReplacementNamed(
@@ -100,8 +132,6 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
     final doctorName = doctorData!['doctorName'] ?? 'Doctor';
     final hospital = doctorData!['hospital'] ?? '';
-    final availableSlots =
-        doctorData!['availableSlots'] as List<dynamic>? ?? [];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Book Appointment')),
@@ -111,6 +141,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (doctorData!['isDemo'] == true)
+                const Text(
+                  'Demo booking — testing only. No clinic is contacted and no payment is collected.',
+                ),
               // Doctor summary
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -144,33 +178,34 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               const SectionTitle(title: 'Select Date'),
               const SizedBox(height: AppSpacing.md),
               AppointmentDateSelector(
-                onDateSelected: (date) {
-                  setState(() {
-                    selectedDate = date;
-                    if (kDebugMode) {
-                      debugPrint(
-                        '[Appointment] Date/time selected: date=$date',
-                      );
-                    }
-                  });
-                },
+                availableDays: (doctorData!['availableDays'] as List<dynamic>?)
+                    ?.cast<String>(),
+                onDateSelected: _loadSlots,
               ),
               const SizedBox(height: AppSpacing.xl),
               const SectionTitle(title: 'Available Time Slots'),
               const SizedBox(height: AppSpacing.md),
-              TimeSlotSection(
-                availableSlots: availableSlots.cast<String>(),
-                onSlotSelected: (slot) {
-                  setState(() {
-                    selectedTimeSlot = slot;
-                    if (kDebugMode) {
-                      debugPrint(
-                        '[Appointment] Date/time selected: time=$slot',
-                      );
-                    }
-                  });
-                },
-              ),
+              if (isLoadingSlots)
+                const Center(child: CircularProgressIndicator())
+              else if (selectedDate == null)
+                const Text('Select a date to see available slots (IST).')
+              else if (availableSlots.isEmpty)
+                const Text('No available slots for this date.')
+              else
+                TimeSlotSection(
+                  key: ValueKey('$selectedDate-$_slotVersion'),
+                  availableSlots: availableSlots.cast<String>(),
+                  onSlotSelected: (slot) {
+                    setState(() {
+                      selectedTimeSlot = slot;
+                      if (kDebugMode) {
+                        debugPrint(
+                          '[Appointment] Date/time selected: time=$slot',
+                        );
+                      }
+                    });
+                  },
+                ),
               const SizedBox(height: AppSpacing.xl),
               const SectionTitle(title: 'Reason for Visit'),
               const SizedBox(height: AppSpacing.md),
@@ -216,7 +251,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               const SizedBox(height: AppSpacing.xl),
               PrimaryButton(
                 text: isBooking ? 'Booking...' : 'Book Appointment',
-                onPressed: isBooking ? null : _bookAppointment,
+                onPressed: isBooking || isLoadingSlots
+                    ? null
+                    : _bookAppointment,
               ),
               const SizedBox(height: AppSpacing.xl),
             ],

@@ -118,6 +118,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       );
     }
 
+    final isDemo = doctor?['isDemo'] == true;
     final doctorName = doctor?['name']?.toString() ?? 'Unknown';
     final qualification = doctor?['qualification']?.toString() ?? '';
     final specialization = doctor?['specialty']?.toString() ?? '';
@@ -189,25 +190,40 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$qualification - $specialization',
+                        isDemo
+                            ? specialization
+                            : '$qualification - $specialization',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondaryGrey,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      DoctorRatingWidget(
-                        rating: double.tryParse(rating) ?? 0,
-                        reviewCount: int.tryParse(reviewCount) ?? 0,
-                      ),
+                      if (!isDemo)
+                        DoctorRatingWidget(
+                          rating: double.tryParse(rating) ?? 0,
+                          reviewCount: int.tryParse(reviewCount) ?? 0,
+                        ),
                       const SizedBox(height: AppSpacing.md),
-                      DoctorStatisticsCard(
-                        patientsServed: (int.tryParse(reviewCount) ?? 0) * 10,
-                        yearsExperience: int.tryParse(experience) ?? 0,
-                        rating: double.tryParse(rating) ?? 0,
-                        reviewsCount: int.tryParse(reviewCount) ?? 0,
-                      ),
+                      if (!isDemo)
+                        DoctorStatisticsCard(
+                          patientsServed: (int.tryParse(reviewCount) ?? 0) * 10,
+                          yearsExperience: int.tryParse(experience) ?? 0,
+                          rating: double.tryParse(rating) ?? 0,
+                          reviewsCount: int.tryParse(reviewCount) ?? 0,
+                        ),
                       const SizedBox(height: AppSpacing.xl),
+                      if (isDemo) ...[
+                        const Text(
+                          'Demo doctor — appointments are for testing only.',
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Sample email (nonfunctional): \n${doctor?['contactEmail'] ?? ''}',
+                        ),
+                        const Text('Phone contact unavailable — demo profile'),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
                       if (about.isNotEmpty) ...[
                         const SectionTitle(title: 'About Doctor'),
                         const SizedBox(height: AppSpacing.md),
@@ -281,17 +297,17 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       ],
                       const SectionTitle(title: 'Available Timings'),
                       const SizedBox(height: AppSpacing.md),
-                      DoctorAvailabilityCard(
-                        todaySlots: availableSlots
-                            .take(4)
-                            .cast<String>()
-                            .toList(),
-                        tomorrowSlots: availableSlots
-                            .skip(4)
-                            .take(4)
-                            .cast<String>()
-                            .toList(),
+                      Text(
+                        (doctor?['availableDays'] as List<dynamic>? ?? []).join(
+                          ', ',
+                        ),
                       ),
+                      if (doctor?['consultationStart'] != null)
+                        Text(
+                          "${doctor?['consultationStart']}–${doctor?['consultationEnd']} IST • ${doctor?['slotDurationMinutes']} minute slots",
+                        )
+                      else
+                        Text(availableSlots.join(', ')),
                       const SizedBox(height: AppSpacing.xl),
                       Row(
                         children: [
@@ -317,24 +333,34 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       const SizedBox(height: AppSpacing.xl),
                       PrimaryButton(
                         text: 'Book Appointment',
-                        onPressed: () {
-                          if (kDebugMode) {
-                            debugPrint('[Appointment] Book button tapped');
-                            debugPrint('[Appointment] Doctor ID: $doctorId');
-                          }
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.bookAppointment,
-                            arguments: {
-                              'doctorId': doctorId,
-                              'doctorName': doctorName,
-                              'specialization': specialization,
-                              'hospital': hospital,
-                              'fee': fee,
-                              'availableSlots': availableSlots,
-                            },
-                          );
-                        },
+                        onPressed:
+                            doctor?['isActive'] == false ||
+                                doctor?['isAvailable'] == false
+                            ? null
+                            : () {
+                                if (kDebugMode) {
+                                  debugPrint(
+                                    '[Appointment] Book button tapped',
+                                  );
+                                  debugPrint(
+                                    '[Appointment] Doctor ID: $doctorId',
+                                  );
+                                }
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.bookAppointment,
+                                  arguments: {
+                                    'doctorId': doctorId,
+                                    'doctorName': doctorName,
+                                    'specialization': specialization,
+                                    'hospital': hospital,
+                                    'fee': fee,
+                                    'availableSlots': availableSlots,
+                                    'availableDays': doctor?['availableDays'],
+                                    'isDemo': isDemo,
+                                  },
+                                );
+                              },
                       ),
                       const SizedBox(height: AppSpacing.xl),
                     ],

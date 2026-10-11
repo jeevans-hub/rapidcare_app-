@@ -1,13 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 
-// Booking dates represent a calendar day, not an instant in the client's timezone.
-const parseAppointmentDate = (value) => {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(value) || Number.isNaN(Date.parse(value))) return null;
-  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
-};
+const { parseDay: parseAppointmentDate, scheduledSlots, dayQuery } = require('../utils/doctorSchedule');
 
 // Create appointment
 const createAppointment = async (req, res, next) => {
@@ -67,29 +61,14 @@ const createAppointment = async (req, res, next) => {
       });
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    appointmentDateObj.setHours(0, 0, 0, 0);
-
-    if (appointmentDateObj < today) {
-      return res.status(400).json({
-        success: false,
-        message: 'Appointment date cannot be in the past',
-      });
-    }
-
-    // Check if time slot is supported by doctor
-    if (doctor.availableSlots && !doctor.availableSlots.includes(timeSlot)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Selected time slot is not available for this doctor',
-      });
+    if (!scheduledSlots(doctor, appointmentDateObj).includes(timeSlot)) {
+      return res.status(400).json({ success: false, message: 'Selected slot is outside the doctor schedule or is in the past (Asia/Kolkata)' });
     }
 
     // Check for slot conflict
     const existingAppointment = await Appointment.findOne({
       doctor: doctorId,
-      appointmentDate: appointmentDateObj,
+      ...dayQuery(appointmentDateObj),
       timeSlot,
       status: { $ne: 'cancelled' },
     });
@@ -106,6 +85,8 @@ const createAppointment = async (req, res, next) => {
       user: userId,
       doctor: doctorId,
       appointmentDate: appointmentDateObj,
+      appointmentDay: appointmentDateObj.toISOString().slice(0, 10),
+      isDemo: doctor.isDemo, consultationFee: doctor.consultationFee, timeZone: doctor.timeZone,
       timeSlot,
       reason: reason || 'General consultation',
       status: 'scheduled',
@@ -114,7 +95,7 @@ const createAppointment = async (req, res, next) => {
     await appointment.save();
 
     // Populate doctor details for response
-    await appointment.populate('doctor', 'name specialty qualification hospital consultationFee');
+    await appointment.populate('doctor', 'name specialty qualification hospital consultationFee isDemo demoKey timeZone');
 
     res.status(201).json({
       success: true,
@@ -142,7 +123,7 @@ const getUserAppointments = async (req, res, next) => {
 
     // Execute query with population
     const appointments = await Appointment.find(query)
-      .populate('doctor', 'name specialty qualification hospital consultationFee rating')
+      .populate('doctor', 'name specialty qualification hospital consultationFee isDemo demoKey timeZone rating')
       .sort({ appointmentDate: -1, createdAt: -1 });
 
     res.status(200).json({
@@ -171,7 +152,7 @@ const getAppointmentById = async (req, res, next) => {
 
     const appointment = await Appointment.findById(id).populate(
       'doctor',
-      'name specialty qualification hospital consultationFee rating experienceYears location about languages availableDays availableSlots'
+      'name specialty qualification hospital consultationFee isDemo demoKey timeZone rating experienceYears location about languages availableDays availableSlots'
     );
 
     if (!appointment) {
@@ -243,7 +224,7 @@ const cancelAppointment = async (req, res, next) => {
     await appointment.save();
 
     // Populate doctor details for response
-    await appointment.populate('doctor', 'name specialty qualification hospital consultationFee');
+    await appointment.populate('doctor', 'name specialty qualification hospital consultationFee isDemo demoKey timeZone');
 
     res.status(200).json({
       success: true,
@@ -319,17 +300,6 @@ const rescheduleAppointment = async (req, res, next) => {
       });
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    newAppointmentDateObj.setHours(0, 0, 0, 0);
-
-    if (newAppointmentDateObj < today) {
-      return res.status(400).json({
-        success: false,
-        message: 'Appointment date cannot be in the past',
-      });
-    }
-
     // Check if doctor exists and validate time slot
     const doctor = await Doctor.findById(appointment.doctor);
     if (!doctor) {
@@ -339,7 +309,7 @@ const rescheduleAppointment = async (req, res, next) => {
       });
     }
 
-    if (doctor.availableSlots && !doctor.availableSlots.includes(timeSlot)) {
+    if (!scheduledSlots(doctor, newAppointmentDateObj).includes(timeSlot)) {
       return res.status(400).json({
         success: false,
         message: 'Selected time slot is not available for this doctor',
@@ -349,7 +319,7 @@ const rescheduleAppointment = async (req, res, next) => {
     // Check for slot conflict (excluding current appointment)
     const conflictingAppointment = await Appointment.findOne({
       doctor: appointment.doctor,
-      appointmentDate: newAppointmentDateObj,
+      ...dayQuery(newAppointmentDateObj),
       timeSlot,
       status: { $ne: 'cancelled' },
       _id: { $ne: id },
@@ -364,11 +334,12 @@ const rescheduleAppointment = async (req, res, next) => {
 
     // Update appointment
     appointment.appointmentDate = newAppointmentDateObj;
+    appointment.appointmentDay = newAppointmentDateObj.toISOString().slice(0, 10);
     appointment.timeSlot = timeSlot;
     await appointment.save();
 
     // Populate doctor details for response
-    await appointment.populate('doctor', 'name specialty qualification hospital consultationFee');
+    await appointment.populate('doctor', 'name specialty qualification hospital consultationFee isDemo demoKey timeZone');
 
     res.status(200).json({
       success: true,

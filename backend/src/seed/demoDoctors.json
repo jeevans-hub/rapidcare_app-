@@ -1,0 +1,202 @@
+[
+  [
+    "RC-D001",
+    "Dr. Aanya Rao",
+    "General Medicine",
+    "500",
+    "Mon,Wed,Fri",
+    "09:00",
+    "12:00",
+    "aanya.rao@rapidcare.example"
+  ],
+  [
+    "RC-D002",
+    "Dr. Vikram Menon",
+    "Cardiology",
+    "1000",
+    "Tue,Thu,Sat",
+    "10:00",
+    "13:00",
+    "vikram.menon@rapidcare.example"
+  ],
+  [
+    "RC-D003",
+    "Dr. Meera Iyer",
+    "Dermatology",
+    "750",
+    "Mon,Thu",
+    "14:00",
+    "17:00",
+    "meera.iyer@rapidcare.example"
+  ],
+  [
+    "RC-D004",
+    "Dr. Arjun Shetty",
+    "Orthopedics",
+    "850",
+    "Tue,Fri",
+    "16:00",
+    "19:00",
+    "arjun.shetty@rapidcare.example"
+  ],
+  [
+    "RC-D005",
+    "Dr. Kavya Nair",
+    "Pediatrics",
+    "650",
+    "Mon,Wed,Sat",
+    "11:00",
+    "14:00",
+    "kavya.nair@rapidcare.example"
+  ],
+  [
+    "RC-D006",
+    "Dr. Rohan Kulkarni",
+    "Neurology",
+    "1100",
+    "Tue,Thu",
+    "09:00",
+    "12:00",
+    "rohan.kulkarni@rapidcare.example"
+  ],
+  [
+    "RC-D007",
+    "Dr. Sana Farooq",
+    "ENT",
+    "650",
+    "Mon,Fri",
+    "10:00",
+    "13:00",
+    "sana.farooq@rapidcare.example"
+  ],
+  [
+    "RC-D008",
+    "Dr. Nikhil Desai",
+    "Ophthalmology",
+    "700",
+    "Wed,Sat",
+    "15:00",
+    "18:00",
+    "nikhil.desai@rapidcare.example"
+  ],
+  [
+    "RC-D009",
+    "Dr. Priya Bhat",
+    "Obstetrics & Gynecology",
+    "950",
+    "Tue,Thu,Sat",
+    "11:00",
+    "14:00",
+    "priya.bhat@rapidcare.example"
+  ],
+  [
+    "RC-D010",
+    "Dr. Aditya Shah",
+    "Gastroenterology",
+    "1000",
+    "Mon,Wed",
+    "16:00",
+    "19:00",
+    "aditya.shah@rapidcare.example"
+  ],
+  [
+    "RC-D011",
+    "Dr. Farah Khan",
+    "Endocrinology",
+    "900",
+    "Tue,Fri",
+    "09:00",
+    "12:00",
+    "farah.khan@rapidcare.example"
+  ],
+  [
+    "RC-D012",
+    "Dr. Dev Patel",
+    "Pulmonology",
+    "800",
+    "Mon,Thu",
+    "15:00",
+    "18:00",
+    "dev.patel@rapidcare.example"
+  ],
+  [
+    "RC-D013",
+    "Dr. Ishita Sen",
+    "Psychiatry",
+    "1000",
+    "Wed,Fri",
+    "10:00",
+    "13:00",
+    "ishita.sen@rapidcare.example"
+  ],
+  [
+    "RC-D014",
+    "Dr. Rahul Varma",
+    "Urology",
+    "950",
+    "Tue,Sat",
+    "14:00",
+    "17:00",
+    "rahul.varma@rapidcare.example"
+  ],
+  [
+    "RC-D015",
+    "Dr. Nandita Suresh",
+    "Nephrology",
+    "1050",
+    "Mon,Thu",
+    "11:00",
+    "14:00",
+    "nandita.suresh@rapidcare.example"
+  ],
+  [
+    "RC-D016",
+    "Dr. Kabir Jain",
+    "Dentistry",
+    "600",
+    "Tue,Fri,Sat",
+    "10:00",
+    "13:00",
+    "kabir.jain@rapidcare.example"
+  ],
+  [
+    "RC-D017",
+    "Dr. Leela Krishnan",
+    "Rheumatology",
+    "900",
+    "Wed,Sat",
+    "09:00",
+    "12:00",
+    "leela.krishnan@rapidcare.example"
+  ],
+  [
+    "RC-D018",
+    "Dr. Sameer Ali",
+    "Oncology",
+    "1200",
+    "Mon,Fri",
+    "14:00",
+    "17:00",
+    "sameer.ali@rapidcare.example"
+  ],
+  [
+    "RC-D019",
+    "Dr. Tara Banerjee",
+    "Allergy & Immunology",
+    "800",
+    "Tue,Thu",
+    "16:00",
+    "19:00",
+    "tara.banerjee@rapidcare.example"
+  ],
+  [
+    "RC-D020",
+    "Dr. Harish Gowda",
+    "Family Medicine",
+    "550",
+    "Mon,Wed,Sat",
+    "17:00",
+    "20:00",
+    "harish.gowda@rapidcare.example"
+  ]
+]

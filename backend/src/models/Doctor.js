@@ -1,6 +1,17 @@
 const mongoose = require('mongoose');
 
 const doctorSchema = new mongoose.Schema({
+  demoKey: { type: String },
+  isDemo: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true },
+  clinic: String,
+  timeZone: { type: String, default: 'Asia/Kolkata', enum: ['Asia/Kolkata'] },
+  consultationStart: String,
+  consultationEnd: String,
+  slotDurationMinutes: { type: Number, default: 30, min: 1 },
+  contactEmail: { type: String, default: null },
+  contactPhone: { type: String, default: null },
+  contactStatus: { type: String, default: 'unavailable' },
   name: {
     type: String,
     required: [true, 'Doctor name is required'],
@@ -19,16 +30,19 @@ const doctorSchema = new mongoose.Schema({
       'Neurology',
       'ENT',
       'Gynecology',
+      'Ophthalmology', 'Obstetrics & Gynecology', 'Gastroenterology',
+      'Endocrinology', 'Pulmonology', 'Psychiatry', 'Urology', 'Nephrology',
+      'Dentistry', 'Rheumatology', 'Oncology', 'Allergy & Immunology', 'Family Medicine',
     ],
   },
   qualification: {
     type: String,
-    required: [true, 'Qualification is required'],
+    required: function() { return !this.get('isDemo'); },
     trim: true,
   },
   experienceYears: {
     type: Number,
-    required: [true, 'Experience years is required'],
+    required: function() { return !this.get('isDemo'); },
     min: [0, 'Experience cannot be negative'],
   },
   hospital: {
@@ -98,6 +112,7 @@ const doctorSchema = new mongoose.Schema({
 });
 
 // Method to return safe doctor object
+doctorSchema.index({ demoKey: 1 }, { unique: true, partialFilterExpression: { demoKey: { $type: 'string' } } });
 doctorSchema.methods.toJSON = function() {
   const doctor = this.toObject();
   delete doctor.__v;

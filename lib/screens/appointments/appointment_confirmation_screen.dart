@@ -19,7 +19,8 @@ class AppointmentConfirmationScreen extends StatelessWidget {
         doctor?['doctorName'] ?? appointment?['doctor']?['name'] ?? 'Doctor';
     final hospital =
         doctor?['hospital'] ?? appointment?['doctor']?['hospital'] ?? '';
-    final appointmentDate = appointment?['appointmentDate'];
+    final appointmentDate =
+        appointment?['appointmentDay'] ?? appointment?['appointmentDate'];
     final timeSlot = appointment?['timeSlot'] ?? '';
     final appointmentId = appointment?['_id']?.toString() ?? '';
 
@@ -30,6 +31,10 @@ class AppointmentConfirmationScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              if (appointment?['isDemo'] == true || doctor?['isDemo'] == true)
+                const Text(
+                  'Demo booking — testing only. No clinic was contacted.',
+                ),
               const SizedBox(height: 40),
               Container(
                 width: 100,
@@ -100,7 +105,11 @@ class AppointmentConfirmationScreen extends StatelessWidget {
                     _ConfirmationRow(
                       icon: Icons.video_call,
                       label: 'Consultation',
-                      value: 'In-Person Visit',
+                      value:
+                          appointment?['isDemo'] == true ||
+                              doctor?['isDemo'] == true
+                          ? 'Demo only — no real visit'
+                          : 'In-Person Visit',
                     ),
                     const SizedBox(height: AppSpacing.md),
                     const Divider(),
@@ -143,7 +152,9 @@ class AppointmentConfirmationScreen extends StatelessWidget {
   String _formatDate(dynamic date) {
     if (date == null) return '';
     try {
-      final dateTime = DateTime.parse(date.toString()).toLocal();
+      final dateTime = date.toString().length == 10
+          ? DateTime.parse(date.toString())
+          : DateTime.parse(date.toString()).toLocal();
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     } catch (e) {
       return date.toString();

@@ -4,30 +4,25 @@ import 'doctor_speciality_chip.dart';
 
 class SpecialityFilterSection extends StatefulWidget {
   final ValueChanged<String>? onSpecialtySelected;
+  final List<String> specialties;
 
-  const SpecialityFilterSection({super.key, this.onSpecialtySelected});
+  const SpecialityFilterSection({
+    super.key,
+    this.onSpecialtySelected,
+    this.specialties = const ['All'],
+  });
 
   @override
-  State<SpecialityFilterSection> createState() => _SpecialityFilterSectionState();
+  State<SpecialityFilterSection> createState() =>
+      _SpecialityFilterSectionState();
 }
 
 class _SpecialityFilterSectionState extends State<SpecialityFilterSection> {
   String selectedSpecialty = 'All';
 
-  final List<String> specialties = [
-    'All',
-    'General Medicine',
-    'Cardiology',
-    'Dermatology',
-    'Orthopedics',
-    'Neurology',
-    'Pediatrics',
-    'ENT',
-    'Gynecology',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final specialties = widget.specialties;
     return SizedBox(
       height: 40,
       child: ListView.builder(

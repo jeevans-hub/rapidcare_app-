@@ -5,8 +5,13 @@ import '../../core/theme/app_radius.dart';
 
 class AppointmentDateSelector extends StatefulWidget {
   final ValueChanged<String>? onDateSelected;
+  final List<String>? availableDays;
 
-  const AppointmentDateSelector({super.key, this.onDateSelected});
+  const AppointmentDateSelector({
+    super.key,
+    this.onDateSelected,
+    this.availableDays,
+  });
 
   @override
   State<AppointmentDateSelector> createState() =>
@@ -23,11 +28,26 @@ class _AppointmentDateSelectorState extends State<AppointmentDateSelector> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: List.generate(7, (index) {
-          final now = DateTime.now();
+          final now = DateTime.now().toUtc().add(
+            const Duration(hours: 5, minutes: 30),
+          );
           final date = DateTime(now.year, now.month, now.day + index);
           final value =
               '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
           const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          const fullDays = [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday',
+          ];
+          if (widget.availableDays != null &&
+              !widget.availableDays!.contains(fullDays[date.weekday - 1])) {
+            return const SizedBox.shrink();
+          }
           return Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: _DateCard(
