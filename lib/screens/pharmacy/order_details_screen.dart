@@ -1,3 +1,4 @@
+import '../../core/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
@@ -14,6 +15,7 @@ class OrderDetailsScreen extends StatefulWidget {
 }
 
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
+  bool _cancelling = false;
   Order? _order;
   bool _isLoading = true;
   String? _errorMessage;
@@ -22,13 +24,17 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final rawArgs = ModalRoute.of(context)?.settings.arguments;
+    final args = rawArgs is Map ? rawArgs : null;
     if (args != null && _orderId == null) {
-      _orderId = args['orderId'] as String?;
+      _orderId = args['orderId'] is String ? args['orderId'] as String : null;
       if (_orderId != null) {
         _fetchOrderDetails();
       }
+    }
+    if (_orderId == null) {
+      _isLoading = false;
+      _errorMessage = 'Order was not selected';
     }
   }
 
@@ -42,7 +48,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     try {
       final result = await OrderService.getOrderById(_orderId!);
-
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -56,6 +62,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Unable to connect to the server';
         _isLoading = false;
@@ -64,7 +71,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Future<void> _cancelOrder() async {
-    if (_order == null || !_order!.canCancel) return;
+    if (_order == null || !_order!.canCancel || _cancelling) return;
+    _cancelling = true;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -87,7 +95,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
     );
 
-    if (confirmed != true) return;
+    if (!mounted) return;
+    if (confirmed != true) {
+      _cancelling = false;
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -95,7 +107,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     try {
       final result = await OrderService.cancelOrder(_order!.id);
-
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -135,6 +147,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
         );
       }
+    } finally {
+      _cancelling = false;
     }
   }
 
@@ -171,8 +185,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
-                onPressed: _fetchOrderDetails,
-                child: const Text('Retry'),
+                onPressed: _orderId == null
+                    ? () => Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.orderHistory,
+                      )
+                    : _fetchOrderDetails,
+                child: Text(_orderId == null ? 'View order history' : 'Retry'),
               ),
             ],
           ),
@@ -232,6 +251,8 @@ class _OrderHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (order.isDemo)
+              const Text('Demo order — no payment or real delivery'),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -246,7 +267,7 @@ class _OrderHeader extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Placed on ${_formatDate(order.createdAt)}',
+              'Placed on ${_formatDate(order.createdAt.toLocal())}',
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.textSecondaryGrey,
               ),

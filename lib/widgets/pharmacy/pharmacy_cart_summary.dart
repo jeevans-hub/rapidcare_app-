@@ -33,10 +33,7 @@ class PharmacyCartSummary extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Order Summary',
-              style: AppTextStyles.title,
-            ),
+            Text('Order Summary', style: AppTextStyles.title),
             const SizedBox(height: AppSpacing.md),
             _SummaryRow(
               label: 'Subtotal',
@@ -94,18 +91,20 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-      Text(
-        label,
-        style: AppTextStyles.body,
-      ),
-      Text(
-        value,
-        style: valueStyle ??
-            AppTextStyles.body.copyWith(
-              color: valueColor ?? AppColors.textPrimaryDarkGrey,
-            ),
-      ),
-    ],
+        Expanded(child: Text(label, style: AppTextStyles.body)),
+        const SizedBox(width: AppSpacing.sm),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style:
+                valueStyle ??
+                AppTextStyles.body.copyWith(
+                  color: valueColor ?? AppColors.textPrimaryDarkGrey,
+                ),
+          ),
+        ),
+      ],
     );
   }
 }

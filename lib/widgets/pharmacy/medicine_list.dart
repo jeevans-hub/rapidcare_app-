@@ -7,11 +7,7 @@ class MedicineList extends StatelessWidget {
   final String title;
   final List<MedicineCard> children;
 
-  const MedicineList({
-    super.key,
-    required this.title,
-    required this.children,
-  });
+  const MedicineList({super.key, required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +24,10 @@ class MedicineList extends StatelessWidget {
           child: GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
+            crossAxisCount: MediaQuery.sizeOf(context).width < 360 ? 1 : 2,
             mainAxisSpacing: AppSpacing.md,
             crossAxisSpacing: AppSpacing.md,
-            childAspectRatio: 0.75,
+            mainAxisExtent: 340,
             children: children,
           ),
         ),

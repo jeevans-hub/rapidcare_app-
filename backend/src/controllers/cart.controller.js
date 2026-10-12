@@ -1,274 +1,64 @@
 const Cart = require('../models/Cart');
 const Medicine = require('../models/Medicine');
 const mongoose = require('mongoose');
+const fail = (statusCode, message) => Object.assign(new Error(message), { statusCode });
 
-// Get user's cart
+// All mutations serialize against the same cart document, including checkout.
+// Retrying write conflicts prevents lost increments and duplicate item rows.
+async function cartFor(user) {
+  try {
+    return await Cart.findOneAndUpdate({ user }, { $setOnInsert: { items: [] } }, { upsert: true, new: true });
+  } catch (error) {
+    if (error.code === 11000) return Cart.findOne({ user });
+    throw error;
+  }
+}
+function priced(cart) {
+  const value = cart.toJSON();
+  value.items = value.items.map(item => ({ ...item, priceAtAdd: item.medicine?.price ?? item.priceAtAdd }));
+  value.subtotal = value.items.reduce((sum, item) => sum + Math.round(item.priceAtAdd * 100) * item.quantity, 0) / 100;
+  value.deliveryFee = value.items.length ? 2.99 : 0;
+  value.total = Math.round((value.subtotal + value.deliveryFee) * 100) / 100;
+  return value;
+}
 const getCart = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-
-    let cart = await Cart.findOne({ user: userId }).populate('items.medicine');
-
-    if (!cart) {
-      cart = await Cart.create({ user: userId, items: [] });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Cart retrieved successfully',
-      data: { cart },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Add item to cart
-const addToCart = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const { medicineId, quantity = 1 } = req.body;
-
-    // Validate medicineId
-    if (!mongoose.Types.ObjectId.isValid(medicineId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid medicine ID',
-      });
-    }
-
-    // Validate quantity
-    if (quantity < 1 || !Number.isInteger(quantity)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Quantity must be a positive integer',
-      });
-    }
-
-    // Find medicine
-    const medicine = await Medicine.findById(medicineId);
-    if (!medicine) {
-      return res.status(404).json({
-        success: false,
-        message: 'Medicine not found',
-      });
-    }
-
-    // Check availability
-    if (!medicine.isAvailable) {
-      return res.status(400).json({
-        success: false,
-        message: 'Medicine is not available',
-      });
-    }
-
-    // Check stock
-    if (medicine.stock < quantity) {
-      return res.status(400).json({
-        success: false,
-        message: 'Insufficient stock',
-      });
-    }
-
-    // Find or create cart
-    let cart = await Cart.findOne({ user: userId });
-    if (!cart) {
-      cart = await Cart.create({ user: userId, items: [] });
-    }
-
-    // Check if medicine already in cart
-    const existingItemIndex = cart.items.findIndex(
-      item => item.medicine.toString() === medicineId
-    );
-
-    if (existingItemIndex !== -1) {
-      // Update quantity
-      const newQuantity = cart.items[existingItemIndex].quantity + quantity;
-      if (medicine.stock < newQuantity) {
-        return res.status(400).json({
-          success: false,
-          message: 'Insufficient stock for requested quantity',
-        });
-      }
-      cart.items[existingItemIndex].quantity = newQuantity;
-    } else {
-      // Add new item
-      cart.items.push({
-        medicine: medicineId,
-        quantity,
-        priceAtAdd: medicine.price,
-      });
-    }
-
-    await cart.save();
+    const cart = await cartFor(req.user.id);
     await cart.populate('items.medicine');
-
-    res.status(200).json({
-      success: true,
-      message: 'Item added to cart successfully',
-      data: { cart },
-    });
-  } catch (error) {
-    next(error);
-  }
+    res.json({ success: true, data: { cart: priced(cart) } });
+  } catch (error) { next(error); }
 };
-
-// Update cart item quantity
-const updateCartItem = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const { medicineId } = req.params;
-    const { quantity } = req.body;
-
-    // Validate medicineId
-    if (!mongoose.Types.ObjectId.isValid(medicineId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid medicine ID',
+function mutate(action) {
+  return async (req, res, next) => {
+    try {
+      const medicineId = action === 'add' ? req.body?.medicineId : req.params.medicineId;
+      const quantity = req.body?.quantity ?? (action === 'add' ? 1 : undefined);
+      if (action !== 'clear' && (typeof medicineId !== 'string' || !/^[a-fA-F0-9]{24}$/.test(medicineId))) throw fail(400, 'Invalid medicine ID');
+      if (['add', 'update'].includes(action) && (!Number.isSafeInteger(quantity) || quantity < (action === 'add' ? 1 : 0))) throw fail(400, 'Quantity must be a valid integer');
+      await cartFor(req.user.id);
+      const cart = await mongoose.connection.transaction(async session => {
+        const current = await Cart.findOne({ user: req.user.id }).session(session);
+        const index = current.items.findIndex(item => item.medicine.toString() === medicineId);
+        if (action === 'clear') current.items = [];
+        else if (action === 'remove' || (action === 'update' && quantity === 0)) {
+          if (index < 0) throw fail(404, 'Item not found in cart');
+          current.items.splice(index, 1);
+        } else {
+          if (action === 'update' && index < 0) throw fail(404, 'Item not found in cart');
+          const medicine = await Medicine.findById(medicineId).session(session);
+          if (!medicine) throw fail(404, 'Medicine not found');
+          if (!medicine.isAvailable) throw fail(400, 'Medicine is not available');
+          const count = quantity + (action === 'add' && index >= 0 ? current.items[index].quantity : 0);
+          if (!Number.isSafeInteger(count) || medicine.stock < count) throw fail(400, 'Insufficient stock');
+          if (index >= 0) { current.items[index].quantity = count; current.items[index].priceAtAdd = medicine.price; }
+          else current.items.push({ medicine: medicineId, quantity: count, priceAtAdd: medicine.price });
+        }
+        await current.save({ session });
+        await current.populate('items.medicine');
+        return current;
       });
-    }
-
-    // Validate quantity
-    if (quantity < 0 || !Number.isInteger(quantity)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Quantity must be a non-negative integer',
-      });
-    }
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cart not found',
-      });
-    }
-
-    const itemIndex = cart.items.findIndex(
-      item => item.medicine.toString() === medicineId
-    );
-
-    if (itemIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Item not found in cart',
-      });
-    }
-
-    if (quantity === 0) {
-      // Remove item
-      cart.items.splice(itemIndex, 1);
-    } else {
-      // Update quantity
-      const medicine = await Medicine.findById(medicineId);
-      if (!medicine) {
-        return res.status(404).json({
-          success: false,
-          message: 'Medicine not found',
-        });
-      }
-
-      if (medicine.stock < quantity) {
-        return res.status(400).json({
-          success: false,
-          message: 'Insufficient stock',
-        });
-      }
-
-      cart.items[itemIndex].quantity = quantity;
-    }
-
-    await cart.save();
-    await cart.populate('items.medicine');
-
-    res.status(200).json({
-      success: true,
-      message: 'Cart item updated successfully',
-      data: { cart },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Remove item from cart
-const removeFromCart = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const { medicineId } = req.params;
-
-    // Validate medicineId
-    if (!mongoose.Types.ObjectId.isValid(medicineId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid medicine ID',
-      });
-    }
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cart not found',
-      });
-    }
-
-    const itemIndex = cart.items.findIndex(
-      item => item.medicine.toString() === medicineId
-    );
-
-    if (itemIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Item not found in cart',
-      });
-    }
-
-    cart.items.splice(itemIndex, 1);
-    await cart.save();
-    await cart.populate('items.medicine');
-
-    res.status(200).json({
-      success: true,
-      message: 'Item removed from cart successfully',
-      data: { cart },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Clear cart
-const clearCart = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) {
-      return res.status(404).json({
-        success: false,
-        message: 'Cart not found',
-      });
-    }
-
-    cart.items = [];
-    await cart.save();
-    await cart.populate('items.medicine');
-
-    res.status(200).json({
-      success: true,
-      message: 'Cart cleared successfully',
-      data: { cart },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-module.exports = {
-  getCart,
-  addToCart,
-  updateCartItem,
-  removeFromCart,
-  clearCart,
-};
+      res.json({ success: true, data: { cart: priced(cart) } });
+    } catch (error) { next(error); }
+  };
+}
+module.exports = { getCart, addToCart: mutate('add'), updateCartItem: mutate('update'), removeFromCart: mutate('remove'), clearCart: mutate('clear') };

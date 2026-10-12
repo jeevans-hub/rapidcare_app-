@@ -17,11 +17,15 @@ class OrderItem {
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
-      medicineId: json['medicine']?['_id']?.toString() ?? json['medicine']?.toString() ?? '',
+      medicineId: json['medicine'] is Map
+          ? (json['medicine']['_id'] ?? json['medicine']['id'] ?? '').toString()
+          : (json['medicine']?.toString() ?? ''),
       nameSnapshot: json['nameSnapshot'] ?? '',
       priceSnapshot: (json['priceSnapshot'] ?? 0).toDouble(),
       quantity: json['quantity'] ?? 1,
-      medicine: json['medicine'] != null ? Medicine.fromJson(json['medicine']) : null,
+      medicine: json['medicine'] is Map<String, dynamic>
+          ? Medicine.fromJson(json['medicine'])
+          : null,
     );
   }
 
@@ -29,6 +33,7 @@ class OrderItem {
 }
 
 class Order {
+  final bool isDemo;
   final String id;
   final String userId;
   final List<OrderItem> items;
@@ -43,6 +48,7 @@ class Order {
   final DateTime updatedAt;
 
   Order({
+    this.isDemo = false,
     required this.id,
     required this.userId,
     required this.items,
@@ -59,9 +65,12 @@ class Order {
 
   factory Order.fromJson(Map<String, dynamic> json) {
     final itemsList = json['items'] as List<dynamic>? ?? [];
-    final items = itemsList.map((item) => OrderItem.fromJson(item as Map<String, dynamic>)).toList();
+    final items = itemsList
+        .map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
+        .toList();
 
     return Order(
+      isDemo: json['isDemo'] == true,
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       userId: json['user']?.toString() ?? '',
       items: items,
@@ -72,8 +81,12 @@ class Order {
       deliveryAddress: json['deliveryAddress'],
       paymentMethod: json['paymentMethod'] ?? 'cash_on_delivery',
       notes: json['notes'],
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 

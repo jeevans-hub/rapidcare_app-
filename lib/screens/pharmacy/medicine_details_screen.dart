@@ -28,10 +28,12 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final rawArgs = ModalRoute.of(context)?.settings.arguments;
+    final args = rawArgs is Map ? rawArgs : null;
     if (args != null && _medicineId == null) {
-      _medicineId = args['medicineId'] as String?;
+      _medicineId = args['medicineId'] is String
+          ? args['medicineId'] as String
+          : null;
       if (_medicineId != null) {
         _fetchMedicineDetails();
       } else {
@@ -54,7 +56,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
 
     try {
       final result = await MedicineService.getMedicineById(_medicineId!);
-
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -71,6 +73,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Unable to connect to the server';
         _isLoading = false;
@@ -90,7 +93,7 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
         medicineId: _medicine!.id,
         quantity: _quantity,
       );
-
+      if (!mounted) return false;
       if (result['success'] == true) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -173,8 +176,13 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
-                onPressed: _fetchMedicineDetails,
-                child: const Text('Retry'),
+                onPressed: _medicineId == null
+                    ? () => Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.pharmacyHome,
+                      )
+                    : _fetchMedicineDetails,
+                child: Text(_medicineId == null ? 'Browse medicines' : 'Retry'),
               ),
             ],
           ),
@@ -310,11 +318,13 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                           size: 16,
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          'Prescription Required',
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.warningOrange,
-                            fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Text(
+                            'Prescription required — demo checkout blocked',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.warningOrange,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -346,6 +356,11 @@ class _MedicineDetailsScreenState extends State<MedicineDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
+                Text(
+                  _medicine!.isInStock
+                      ? 'In stock: ${_medicine!.stock}'
+                      : 'Out of stock',
+                ),
                 const SectionTitle(title: 'Quantity'),
                 const SizedBox(height: AppSpacing.sm),
                 Row(

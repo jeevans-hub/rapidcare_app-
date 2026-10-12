@@ -10,8 +10,15 @@ const requestError = (statusCode, message) => Object.assign(new Error(message), 
 const placeOrder = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { deliveryAddress, notes } = req.body;
+    const { deliveryAddress, notes, checkoutKey } = req.body || {};
+    if (checkoutKey != null && (typeof checkoutKey !== 'string' || !/^[a-zA-Z0-9_-]{16,100}$/.test(checkoutKey))) throw requestError(400, 'Invalid checkout key');
+    if (deliveryAddress != null && (typeof deliveryAddress !== 'string' || !deliveryAddress.trim() || deliveryAddress.length > 500)) throw requestError(400, 'Invalid delivery address');
+    if (notes != null && typeof notes !== 'string') throw requestError(400, 'Invalid notes');
     const order = await mongoose.connection.transaction(async (session) => {
+      if (checkoutKey) {
+        const existing = await Order.findOne({ user: userId, checkoutKey }).session(session).populate('items.medicine');
+        if (existing) return existing;
+      }
       const cart = await Cart.findOne({ user: userId }).session(session).populate('items.medicine');
       if (!cart || cart.items.length === 0) {
         throw requestError(400, 'Cart is empty');
@@ -21,6 +28,7 @@ const placeOrder = async (req, res, next) => {
         if (!item.medicine || !item.medicine.isAvailable) {
           throw requestError(400, 'One or more medicines are not available');
         }
+        if (item.medicine.requiresPrescription) throw requestError(400, 'Prescription verification is unavailable. Remove prescription-required medicines before demo checkout.');
         if (!Number.isInteger(item.quantity) || item.quantity < 1) {
           throw requestError(400, 'Quantity must be a positive integer');
         }
@@ -34,19 +42,21 @@ const placeOrder = async (req, res, next) => {
         }
       }
 
-      const subtotal = cart.items.reduce((sum, item) => sum + item.priceAtAdd * item.quantity, 0);
+      const subtotal = cart.items.reduce((sum, item) => sum + Math.round(item.medicine.price * 100) * item.quantity, 0) / 100;
       const deliveryFee = 2.99;
       const [createdOrder] = await Order.create([{
         user: userId,
+        checkoutKey,
+        isDemo: true,
         items: cart.items.map(item => ({
           medicine: item.medicine._id,
           nameSnapshot: item.medicine.name,
-          priceSnapshot: item.priceAtAdd,
+          priceSnapshot: item.medicine.price,
           quantity: item.quantity,
         })),
         subtotal,
         deliveryFee,
-        totalAmount: subtotal + deliveryFee,
+        totalAmount: Math.round((subtotal + deliveryFee) * 100) / 100,
         status: 'placed',
         deliveryAddress: deliveryAddress || null,
         paymentMethod: 'cash_on_delivery',
@@ -149,7 +159,7 @@ const cancelOrder = async (req, res, next) => {
       const currentOrder = await Order.findById(id).session(session);
       if (!currentOrder) throw requestError(404, 'Order not found');
       if (currentOrder.user.toString() !== userId) throw requestError(403, 'Access denied');
-      if (['cancelled', 'delivered'].includes(currentOrder.status)) {
+      if (!['placed', 'confirmed'].includes(currentOrder.status)) {
         throw requestError(400, 'Order cannot be cancelled');
       }
 

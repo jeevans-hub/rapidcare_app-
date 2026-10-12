@@ -15,6 +15,7 @@ class PharmacyCartScreen extends StatefulWidget {
 }
 
 class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
+  bool _busy = false;
   Cart? _cart;
   bool _isLoading = true;
   String? _errorMessage;
@@ -26,6 +27,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
   }
 
   Future<void> _fetchCart() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -33,7 +35,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
 
     try {
       final result = await CartService.getCart();
-      
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -47,6 +49,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Unable to connect to the server';
         _isLoading = false;
@@ -55,12 +58,14 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
   }
 
   Future<void> _updateQuantity(String medicineId, int quantity) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
       final result = await CartService.updateCartItem(
         medicineId: medicineId,
         quantity: quantity,
       );
-      
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -85,13 +90,17 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _removeItem(String medicineId) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
       final result = await CartService.removeFromCart(medicineId);
-      
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         setState(() {
@@ -116,10 +125,28 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _clearCart() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final result = await CartService.clearCart();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (result['success'] == true) {
+      await _fetchCart();
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result['message'])));
     }
   }
 
   void _proceedToCheckout() {
+    if (_busy || _cart == null || _cart!.items.isEmpty) return;
     Navigator.pushNamed(
       context,
       AppRoutes.pharmacyOrderConfirmation,
@@ -132,18 +159,22 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Cart'),
+        actions: [
+          TextButton(
+            onPressed: _busy ? null : _clearCart,
+            child: const Text('Clear cart'),
+          ),
+        ],
       ),
       body: SafeArea(
-        child: _buildBody(),
+        child: AbsorbPointer(absorbing: _busy, child: _buildBody()),
       ),
     );
   }
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_errorMessage != null) {
@@ -153,7 +184,11 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppColors.errorRed,
+              ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 _errorMessage!,
@@ -161,10 +196,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.lg),
-              ElevatedButton(
-                onPressed: _fetchCart,
-                child: const Text('Retry'),
-              ),
+              ElevatedButton(onPressed: _fetchCart, child: const Text('Retry')),
             ],
           ),
         ),
@@ -178,16 +210,19 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.textSecondaryGrey),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                'Your cart is empty',
-                style: AppTextStyles.body,
+              const Icon(
+                Icons.shopping_cart_outlined,
+                size: 64,
+                color: AppColors.textSecondaryGrey,
               ),
+              const SizedBox(height: AppSpacing.md),
+              Text('Your cart is empty', style: AppTextStyles.body),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Add medicines to get started',
-                style: AppTextStyles.caption.copyWith(color: AppColors.textSecondaryGrey),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondaryGrey,
+                ),
               ),
             ],
           ),
@@ -208,7 +243,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
                 children: List.generate(_cart!.items.length, (index) {
                   final item = _cart!.items[index];
                   return Padding(
- padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: MedicineCartItem(
                       name: item.medicineName,
                       price: item.priceAtAdd,

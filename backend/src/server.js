@@ -11,6 +11,8 @@ const startServer = async () => {
 
     // Do not accept bookings until the unique slot index has been created.
     await Appointment.init();
+    await require('./models/Order').init();
+    await require('./models/Cart').init();
 
     // Seed medicines (idempotent - only if none exist)
     await seedMedicines();

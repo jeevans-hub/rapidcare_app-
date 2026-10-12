@@ -174,18 +174,22 @@ class AppRouter {
         );
       case AppRoutes.pharmacy:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const PharmacyHomeScreen(),
         );
       case AppRoutes.pharmacyHome:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const PharmacyHomeScreen(),
         );
       case AppRoutes.medicineDetails:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const MedicineDetailsScreen(),
         );
       case AppRoutes.pharmacyCart:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const PharmacyCartScreen(),
         );
       case AppRoutes.prescription:
@@ -194,14 +198,17 @@ class AppRouter {
         );
       case AppRoutes.pharmacyOrderConfirmation:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const PharmacyOrderConfirmationScreen(),
         );
       case AppRoutes.orderHistory:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const OrderHistoryScreen(),
         );
       case AppRoutes.orderDetails:
         return MaterialPageRoute(
+          settings: settings,
           builder: (_) => const OrderDetailsScreen(),
         );
       case AppRoutes.profile:

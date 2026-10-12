@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
@@ -16,6 +17,27 @@ class PharmacyHomeScreen extends StatefulWidget {
 
 class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
   List<Medicine> _medicines = [];
+  List<String> _categories = [];
+  String? _category;
+  bool _availableOnly = false;
+  final _search = TextEditingController();
+  Timer? _debounce;
+  int _request = 0;
+  final Set<String> _adding = {};
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _reset() {
+    _search.clear();
+    _category = null;
+    _availableOnly = false;
+    _fetchMedicines();
+  }
+
   bool _isLoading = true;
   String? _errorMessage;
   int _cartItemCount = 0;
@@ -28,19 +50,30 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
   }
 
   Future<void> _fetchMedicines() async {
+    if (!mounted) return;
+    final request = ++_request;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final result = await MedicineService.getMedicines();
-      
+      final result = await MedicineService.getMedicines(
+        search: _search.text.trim(),
+        category: _category,
+        available: _availableOnly ? true : null,
+      );
+      if (!mounted || request != _request) return;
+
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
+        _categories = (data['categories'] as List<dynamic>? ?? [])
+            .cast<String>();
         final medicinesList = data['medicines'] as List<dynamic>? ?? [];
         setState(() {
-          _medicines = medicinesList.map((json) => Medicine.fromJson(json as Map<String, dynamic>)).toList();
+          _medicines = medicinesList
+              .map((json) => Medicine.fromJson(json as Map<String, dynamic>))
+              .toList();
           _isLoading = false;
         });
       } else {
@@ -50,6 +83,7 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
         });
       }
     } catch (e) {
+      if (!mounted || request != _request) return;
       setState(() {
         _errorMessage = 'Unable to connect to the server';
         _isLoading = false;
@@ -60,13 +94,17 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
   Future<void> _fetchCartCount() async {
     try {
       final result = await CartService.getCart();
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         final cartData = data['cart'] as Map<String, dynamic>?;
         if (cartData != null) {
           final items = cartData['items'] as List<dynamic>? ?? [];
           setState(() {
-            _cartItemCount = items.fold(0, (sum, item) => sum + (item['quantity'] as int? ?? 1));
+            _cartItemCount = items.fold(
+              0,
+              (sum, item) => sum + (item['quantity'] as int? ?? 1),
+            );
           });
         }
       }
@@ -82,7 +120,8 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
         title: const Text('Pharmacy'),
         actions: [
           IconButton(
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.notifications),
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.notifications),
             icon: const Icon(Icons.notifications_outlined),
           ),
           IconButton(
@@ -96,7 +135,10 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
             children: [
               IconButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRoutes.pharmacyCart).then((_) => _fetchCartCount());
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.pharmacyCart,
+                  ).then((_) => _fetchCartCount());
                 },
                 icon: const Icon(Icons.shopping_cart_outlined),
               ),
@@ -129,63 +171,11 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+      body: SafeArea(child: _buildBody()),
     );
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: AppColors.errorRed),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                _errorMessage!,
-                style: const TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton(
-                onPressed: _fetchMedicines,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_medicines.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.medication_outlined, size: 64, color: AppColors.textSecondaryGrey),
-              const SizedBox(height: AppSpacing.md),
-              const Text(
-                'No medicines available',
-                style: TextStyle(fontSize: 16),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: _fetchMedicines,
       child: SingleChildScrollView(
@@ -195,41 +185,93 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
             const SizedBox(height: AppSpacing.md),
             PharmacyHeader(
               title: 'Order Medicines',
-              subtitle: 'Medicines delivered to your doorstep',
+              subtitle: 'Demo pharmacy — no real delivery or payment',
+              onCartTap: () => Navigator.pushNamed(
+                context,
+                AppRoutes.pharmacyCart,
+              ).then((_) => _fetchCartCount()),
+              onNotificationTap: () =>
+                  Navigator.pushNamed(context, AppRoutes.notifications),
               cartItemCount: _cartItemCount,
             ),
             const SizedBox(height: AppSpacing.md),
             MedicineSearchBar(
+              controller: _search,
+              onFilterTap: () {
+                setState(() => _availableOnly = !_availableOnly);
+                _fetchMedicines();
+              },
               onChanged: (value) {
-                // TODO: Implement search
+                _debounce?.cancel();
+                _debounce = Timer(
+                  const Duration(milliseconds: 300),
+                  _fetchMedicines,
+                );
               },
             ),
             const SizedBox(height: AppSpacing.lg),
-            const MedicineCategoriesSection(),
-            const SizedBox(height: AppSpacing.lg),
-            MedicineList(
-              title: 'Popular Medicines',
-              children: _medicines.take(6).map((medicine) {
-                return MedicineCard(
-                  name: medicine.name,
-                  category: medicine.category,
-                  price: medicine.price,
-                  originalPrice: medicine.mrp,
-                  rating: medicine.rating,
-                  discount: medicine.discountText.isNotEmpty ? medicine.discountText : null,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.medicineDetails,
-                      arguments: {'medicineId': medicine.id},
-                    ).then((_) => _fetchCartCount());
-                  },
-                  onAddTap: () {
-                    _addToCart(medicine.id);
-                  },
-                );
-              }).toList(),
+            MedicineCategoriesSection(
+              categories: _categories,
+              selected: _category,
+              onSelected: (value) {
+                _category = value;
+                _fetchMedicines();
+              },
             ),
+            if (_category != null || _search.text.isNotEmpty || _availableOnly)
+              TextButton(
+                onPressed: _reset,
+                child: Text(
+                  _availableOnly
+                      ? 'In stock only • Reset filters'
+                      : 'Reset filters',
+                ),
+              ),
+            const SizedBox(height: AppSpacing.lg),
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_errorMessage != null)
+              Column(
+                children: [
+                  Text(_errorMessage!),
+                  TextButton(
+                    onPressed: _fetchMedicines,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              )
+            else if (_medicines.isEmpty)
+              const Center(child: Text('No medicines available'))
+            else
+              MedicineList(
+                title: 'Medicines',
+                children: _medicines.map((medicine) {
+                  return MedicineCard(
+                    name: medicine.name,
+                    category: medicine.category,
+                    price: medicine.price,
+                    originalPrice: medicine.mrp,
+                    rating: medicine.rating,
+                    discount: medicine.discountText.isNotEmpty
+                        ? medicine.discountText
+                        : null,
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.medicineDetails,
+                        arguments: {'medicineId': medicine.id},
+                      ).then((_) => _fetchCartCount());
+                    },
+                    stock: medicine.stock,
+                    available: medicine.isAvailable,
+                    requiresPrescription: medicine.requiresPrescription,
+                    onAddTap:
+                        !medicine.isInStock || _adding.contains(medicine.id)
+                        ? null
+                        : () => _addToCart(medicine.id),
+                  );
+                }).toList(),
+              ),
             const SizedBox(height: AppSpacing.xl),
           ],
         ),
@@ -238,12 +280,12 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
   }
 
   Future<void> _addToCart(String medicineId) async {
+    if (!_adding.add(medicineId)) return;
+    setState(() {});
     try {
       final result = await CartService.addToCart(medicineId: medicineId);
       if (result['success'] == true) {
-        setState(() {
-          _cartItemCount++;
-        });
+        await _fetchCartCount();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -272,6 +314,8 @@ class _PharmacyHomeScreenState extends State<PharmacyHomeScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _adding.remove(medicineId));
     }
   }
 }

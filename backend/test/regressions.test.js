@@ -319,3 +319,119 @@ test('production seeding is refused before any write', async () => {
   finally { process.env.NODE_ENV = 'test'; }
   assert.equal(await Doctor.countDocuments(), 0);
 });
+
+test('pharmacy catalog search, category, availability and IDs are consistent', async () => {
+  await require('../src/seed/medicineSeed')();
+  const list = await request('/medicines', { method: 'GET' });
+  assert.equal(list.status, 200);
+  assert.ok(list.body.data.medicines.length > 6);
+  const item = list.body.data.medicines[0];
+  assert.equal((await request('/medicines/'+item._id, {method:'GET'})).body.data.medicine.name, item.name);
+  for (const search of [item.name, item.category]) {
+    const result = await request('/medicines?search='+encodeURIComponent(search), {method:'GET'});
+    assert.ok(result.body.data.medicines.some(m => m._id === item._id));
+  }
+  assert.equal((await request('/medicines?search=%5B', {method:'GET'})).status, 200);
+  const filtered = await request('/medicines?category='+encodeURIComponent(item.category), {method:'GET'});
+  assert.ok(filtered.body.data.medicines.every(m => m.category === item.category));
+  assert.equal((await request('/medicines/invalid', {method:'GET'})).status, 400);
+  assert.equal((await request('/medicines/'+new mongoose.Types.ObjectId(), {method:'GET'})).status, 404);
+});
+
+test('cart CRUD, concurrent adds, current catalog prices and ownership', async () => {
+  const item = await medicine(20);
+  assert.equal((await request('/cart', {method:'GET'})).status, 401);
+  assert.equal((await request('/orders', {body:{}})).status, 401);
+  const add = () => request('/cart/items', {user:users[0], body:{medicineId:item.id, quantity:1, price:0, user:users[1].id}});
+  await request('/cart', {user:users[0], method:'GET'});
+  assert.ok((await Promise.all([add(),add(),add()])).every(r=>r.status===200));
+  let result = await request('/cart', {user:users[0],method:'GET'});
+  assert.equal(result.body.data.cart.items.length,1);
+  assert.equal(result.body.data.cart.items[0].quantity,3);
+  await Medicine.updateOne({_id:item.id},{$set:{price:12.34}});
+  result = await request('/cart', {user:users[0],method:'GET'});
+  assert.equal(result.body.data.cart.subtotal,37.02);
+  assert.equal(result.body.data.cart.total,40.01);
+  assert.equal((await request('/cart',{user:users[1],method:'GET'})).body.data.cart.items.length,0);
+  assert.equal((await request('/cart/items/'+item.id,{user:users[1],method:'PATCH',body:{quantity:2}})).status,404);
+  assert.equal((await request('/cart/items/'+item.id,{user:users[0],method:'PATCH',body:{quantity:2}})).status,200);
+  assert.equal((await request('/cart/items/'+item.id,{user:users[0],method:'DELETE'})).status,200);
+  await add();
+  assert.equal((await request('/cart',{user:users[0],method:'DELETE'})).body.data.cart.items.length,0);
+});
+
+test('invalid, excessive, out-of-stock and unavailable cart quantities are rejected', async () => {
+  const item = await medicine(2);
+  for (const quantity of [-1,0,1.5,'2',3,Number.MAX_SAFE_INTEGER+1]) {
+    assert.equal((await request('/cart/items',{user:users[0],body:{medicineId:item.id,quantity}})).status,400);
+  }
+  assert.equal((await request('/cart/items',{user:users[0],body:{medicineId:'invalid'}})).status,400);
+  await Medicine.updateOne({_id:item.id},{$set:{stock:0}});
+  assert.equal((await request('/cart/items',{user:users[0],body:{medicineId:item.id}})).status,400);
+  await Medicine.updateOne({_id:item.id},{$set:{stock:2,isAvailable:false}});
+  assert.equal((await request('/cart/items',{user:users[0],body:{medicineId:item.id}})).status,400);
+});
+
+test('checkout uses current prices, replays a submission key, persists history and isolates users', async () => {
+  const item = await medicine(5);
+  await cart(users[0],[item]);
+  await Medicine.updateOne({_id:item.id},{$set:{price:14.25}});
+  const body = {checkoutKey:'pharmacy-test-key-0001',price:0,totalAmount:0,user:users[1].id};
+  const results = await Promise.all([0,1].map(()=>request('/orders',{user:users[0],body})));
+  assert.ok(results.every(r=>r.status===201));
+  const order = results[0].body.data.order;
+  assert.equal(results[1].body.data.order._id,order._id);
+  assert.equal(order.totalAmount,17.24);
+  assert.equal(order.items[0].priceSnapshot,14.25);
+  assert.equal(await Order.countDocuments(),1);
+  assert.equal((await Medicine.findById(item.id)).stock,4);
+  assert.equal((await request('/cart',{user:users[0],method:'GET'})).body.data.cart.items.length,0);
+  // A replay must not consume a new cart assembled after a successful checkout.
+  await request('/cart/items',{user:users[0],body:{medicineId:item.id}});
+  assert.equal((await request('/orders',{user:users[0],body})).body.data.order._id,order._id);
+  assert.equal((await request('/cart',{user:users[0],method:'GET'})).body.data.cart.items.length,1);
+  assert.equal((await request('/orders',{user:users[0],method:'GET'})).body.data.orders[0]._id,order._id);
+  assert.equal((await request('/orders',{user:users[1],method:'GET'})).body.data.orders.length,0);
+  assert.equal((await request('/orders/'+order._id,{user:users[1],method:'GET'})).status,403);
+  assert.equal((await request('/orders/'+order._id,{user:users[0],method:'GET'})).status,200);
+});
+
+test('prescription checkout is blocked and transaction leaves stock and cart intact', async () => {
+  const first = await medicine(3), prescription = await medicine(3);
+  await Medicine.updateOne({_id:prescription.id},{$set:{requiresPrescription:true}});
+  await cart(users[0],[first,prescription]);
+  const result = await request('/orders',{user:users[0],body:{}});
+  assert.equal(result.status,400);
+  assert.match(result.body.message,/Prescription/);
+  assert.equal((await Medicine.findById(first.id)).stock,3);
+  assert.equal((await Medicine.findById(prescription.id)).stock,3);
+  assert.equal(await Order.countDocuments(),0);
+  assert.equal((await Cart.findOne({user:users[0].id})).items.length,2);
+});
+
+test('failure after inventory reservation rolls back stock, order and cart', async () => {
+  const item = await medicine(3);
+  await cart(users[0],[item]);
+  const original = Order.create;
+  Order.create = async () => { throw new Error('Simulated persistence failure'); };
+  try { assert.equal((await request('/orders',{user:users[0],body:{}})).status,500); }
+  finally { Order.create = original; }
+  assert.equal((await Medicine.findById(item.id)).stock,3);
+  assert.equal(await Order.countDocuments(),0);
+  assert.equal((await Cart.findOne({user:users[0].id})).items.length,1);
+});
+
+test('packed orders cannot be cancelled or restore stock', async () => {
+  const item = await medicine(3); await cart(users[0],[item]);
+  const created = await request('/orders',{user:users[0],body:{}});
+  await Order.updateOne({_id:created.body.data.order._id},{$set:{status:'packed'}});
+  assert.equal((await request('/orders/'+created.body.data.order._id+'/cancel',{user:users[0],method:'PATCH',body:{}})).status,400);
+  assert.equal((await Medicine.findById(item.id)).stock,2);
+});
+
+test('medical records, notification and health metric routes retain authentication and owner scoping', async () => {
+  for (const path of ['/medical-records','/notifications','/health-metrics']) {
+    assert.equal((await request(path,{method:'GET'})).status,401);
+    assert.equal((await request(path,{user:users[0],method:'GET'})).status,200);
+  }
+});

@@ -28,6 +28,8 @@ const orderSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  checkoutKey: { type: String, maxlength: 100 },
+  isDemo: { type: Boolean, default: true },
   items: {
     type: [orderItemSchema],
     required: true,
@@ -71,6 +73,8 @@ const orderSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+orderSchema.index({ user: 1, checkoutKey: 1 }, { unique: true, partialFilterExpression: { checkoutKey: { $type: 'string' } } });
 
 // Indexes for efficient querying
 orderSchema.index({ user: 1, createdAt: -1 });

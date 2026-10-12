@@ -5,6 +5,9 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 
 class MedicineCard extends StatelessWidget {
+  final int? stock;
+  final bool available;
+  final bool requiresPrescription;
   final String name;
   final String category;
   final double price;
@@ -16,6 +19,9 @@ class MedicineCard extends StatelessWidget {
 
   const MedicineCard({
     super.key,
+    this.stock,
+    this.available = true,
+    this.requiresPrescription = false,
     required this.name,
     required this.category,
     required this.price,
@@ -95,44 +101,49 @@ class MedicineCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (stock != null)
+                Text(
+                  available && stock! > 0 ? 'In stock: $stock' : 'Out of stock',
+                  style: AppTextStyles.small,
+                ),
+              if (requiresPrescription)
+                const Text(
+                  'Prescription required',
+                  style: TextStyle(fontSize: 11),
+                ),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  Icon(
-                    Icons.star,
-                    size: 14,
-                    color: AppColors.warningOrange,
-                  ),
+                  Icon(Icons.star, size: 14, color: AppColors.warningOrange),
                   const SizedBox(width: 4),
-                  Text(
-                    rating.toString(),
-                    style: AppTextStyles.small,
-                  ),
+                  Text(rating.toString(), style: AppTextStyles.small),
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '\$${price.toStringAsFixed(2)}',
-                        style: AppTextStyles.title.copyWith(
-                          color: AppColors.primaryBlue,
-                          fontSize: 16,
-                        ),
-                      ),
-                      if (originalPrice != null)
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          '\$${originalPrice!.toStringAsFixed(2)}',
-                          style: AppTextStyles.small.copyWith(
-                            decoration: TextDecoration.lineThrough,
-                            color: AppColors.textSecondaryGrey,
+                          '\$${price.toStringAsFixed(2)}',
+                          style: AppTextStyles.title.copyWith(
+                            color: AppColors.primaryBlue,
+                            fontSize: 16,
                           ),
                         ),
-                    ],
+                        if (originalPrice != null)
+                          Text(
+                            '\$${originalPrice!.toStringAsFixed(2)}',
+                            style: AppTextStyles.small.copyWith(
+                              decoration: TextDecoration.lineThrough,
+                              color: AppColors.textSecondaryGrey,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                   ElevatedButton(
                     onPressed: onAddTap,

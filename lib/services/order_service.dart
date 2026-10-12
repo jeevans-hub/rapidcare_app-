@@ -1,155 +1,51 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
 import '../core/config/api_config.dart';
+import 'pharmacy_api.dart';
 
 class OrderService {
   static String get baseUrl => ApiConfig.baseUrl;
-
-  // Place order from cart
   static Future<Map<String, dynamic>> placeOrder({
     String? deliveryAddress,
     String? notes,
+    String? checkoutKey,
   }) async {
-    try {
-      if (AuthService.token == null) {
-        return {'success': false, 'message': 'Not authenticated'};
-      }
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/orders'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AuthService.token}',
-        },
-        body: jsonEncode({
-          if (deliveryAddress != null && deliveryAddress.isNotEmpty) 'deliveryAddress': deliveryAddress,
-          if (notes != null && notes.isNotEmpty) 'notes': notes,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 201 && data['success'] == true) {
-        return {'success': true, 'data': data['data']};
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to place order',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
+    final result = await PharmacyApi.request(
+      'POST',
+      '/orders',
+      authenticated: true,
+      body: {
+        'deliveryAddress': ?deliveryAddress,
+        'notes': ?notes,
+        'checkoutKey': ?checkoutKey,
+      },
+      log: '[Checkout] Submit started',
+    );
+    if (kDebugMode && result['success'] == true) {
+      debugPrint('[Order] Created ID: ${result['data']['order']['_id']}');
     }
+    return result;
   }
 
-  // Get user's orders
-  static Future<Map<String, dynamic>> getOrders({String? status}) async {
-    try {
-      if (AuthService.token == null) {
-        return {'success': false, 'message': 'Not authenticated'};
-      }
-
-      // Build query parameters
-      final queryParams = <String, String>{};
-      if (status != null && status.isNotEmpty) {
-        queryParams['status'] = status;
-      }
-
-      final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
-
-      final response = await http.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AuthService.token}',
-        },
+  static Future<Map<String, dynamic>> getOrders({String? status}) =>
+      PharmacyApi.request(
+        'GET',
+        '/orders',
+        authenticated: true,
+        query: {'status': ?status},
+        log: '[Orders] History fetch',
       );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        return {'success': true, 'data': data['data']};
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to fetch orders',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
-    }
-  }
-
-  // Get order by ID
-  static Future<Map<String, dynamic>> getOrderById(String orderId) async {
-    try {
-      if (AuthService.token == null) {
-        return {'success': false, 'message': 'Not authenticated'};
-      }
-
-      final response = await http.get(
-        Uri.parse('$baseUrl/orders/$orderId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AuthService.token}',
-        },
+  static Future<Map<String, dynamic>> getOrderById(String id) =>
+      PharmacyApi.request(
+        'GET',
+        '/orders/$id',
+        authenticated: true,
+        log: '[Orders] Detail fetch',
       );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        return {'success': true, 'data': data['data']};
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to fetch order details',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
-    }
-  }
-
-  // Cancel order
-  static Future<Map<String, dynamic>> cancelOrder(String orderId) async {
-    try {
-      if (AuthService.token == null) {
-        return {'success': false, 'message': 'Not authenticated'};
-      }
-
-      final response = await http.patch(
-        Uri.parse('$baseUrl/orders/$orderId/cancel'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AuthService.token}',
-        },
+  static Future<Map<String, dynamic>> cancelOrder(String id) =>
+      PharmacyApi.request(
+        'PATCH',
+        '/orders/$id/cancel',
+        authenticated: true,
+        log: '[Orders] Cancel',
       );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        return {'success': true, 'data': data['data']};
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to cancel order',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Unable to connect to the server',
-      };
-    }
-  }
 }

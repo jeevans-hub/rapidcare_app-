@@ -26,6 +26,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   Future<void> _fetchOrders() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -33,7 +34,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
     try {
       final result = await OrderService.getOrders();
-
+      if (!mounted) return;
       if (result['success'] == true) {
         final data = result['data'] as Map<String, dynamic>;
         final ordersList = data['orders'] as List<dynamic>? ?? [];
@@ -50,6 +51,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Unable to connect to the server';
         _isLoading = false;
@@ -142,7 +144,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 context,
                 AppRoutes.orderDetails,
                 arguments: {'orderId': order.id},
-              );
+              ).then((_) => _fetchOrders());
             },
           );
         },
@@ -172,12 +174,15 @@ class _OrderCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+            if (order.isDemo) const Text('Demo order — no payment or real delivery'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Order #${order.id.substring(0, 8).toUpperCase()}',
-                    style: AppTextStyles.title,
+                  Flexible(
+                    child: Text(
+                      'Order #${order.id.substring(0, 8).toUpperCase()}',
+                      style: AppTextStyles.title,
+                    ),
                   ),
                   _StatusBadge(status: order.status),
                 ],
@@ -199,7 +204,7 @@ class _OrderCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                _formatDate(order.createdAt),
+                _formatDate(order.createdAt.toLocal()),
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.textSecondaryGrey,
                 ),
